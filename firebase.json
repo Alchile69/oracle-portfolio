@@ -1,0 +1,41 @@
+{  "hosting": {
+    "public": "dist",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/api/allocations",
+        "function": "getAllocations"
+      },
+      {
+        "source": "/api/market-stress",
+        "function": "getMarketStress"
+      },
+      {
+        "source": "/api/regimes",
+        "function": "getRegime"
+      },
+      {
+        "source": "/api/market-data",
+        "function": "getMarketData"
+      },
+      {
+        "source": "/api/countries",
+        "function": "getCountries"
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs20",
+    "secrets": ["FRED_API_KEY", "ALPHA_VANTAGE_API_KEY"],
+    "timeoutSeconds": 60
+  }
+}

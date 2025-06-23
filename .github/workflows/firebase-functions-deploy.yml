@@ -20,7 +20,7 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install root dependencies
         run: npm ci
 
       - name: Build frontend
@@ -44,16 +44,22 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install root dependencies
         run: npm ci
 
       - name: Build frontend
         run: npm run build
 
       - name: Install Firebase CLI
-        run: npm install -g firebase-tools
+        run: npm install -g firebase-tools@14.7.0 # SPÉCIFIER LA VERSION EXACTE
 
-      - name: Deploy to Firebase Staging (Frontend + Functions)
+      - name: Install Functions dependencies
+        run: |
+          cd functions
+          npm ci
+          npm rebuild # AJOUTÉ POUR FORCER LA RECONSTRUCTION DES MODULES
+
+      - name: Deploy to Firebase Staging (Frontend + Functions )
         run: firebase deploy --project oracle-portfolio-staging --token "${{ secrets.FIREBASE_TOKEN }}"
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
@@ -72,14 +78,20 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install root dependencies
         run: npm ci
 
       - name: Build frontend
         run: npm run build
 
       - name: Install Firebase CLI
-        run: npm install -g firebase-tools
+        run: npm install -g firebase-tools@14.7.0 # SPÉCIFIER LA VERSION EXACTE
+
+      - name: Install Functions dependencies
+        run: |
+          cd functions
+          npm ci
+          npm rebuild # AJOUTÉ POUR FORCER LA RECONSTRUCTION DES MODULES
 
       - name: Deploy to Firebase Production (Frontend + Functions)
         run: firebase deploy --project oracle-portfolio-prod --token "${{ secrets.FIREBASE_TOKEN }}"

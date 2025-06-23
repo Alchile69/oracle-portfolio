@@ -1,5 +1,7 @@
-{  "hosting": {
+{
+  "hosting": {
     "public": "dist",
+    "site": "oracle-portfolio-prod",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -38,43 +40,4 @@
     "secrets": ["FRED_API_KEY", "ALPHA_VANTAGE_API_KEY"],
     "timeoutSeconds": 60
   }
-{
-  "hosting": {
-    "public": "dist",
-    "site": "oracle-portfolio-prod",  // Assurez-vous que cette ligne est là
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "/api/allocations",
-        "function": "getAllocations"
-      },
-      {
-        "source": "/api/market-stress",
-        "function": "getMarketStress"
-      },
-      {
-        "source": "/api/regimes",
-        "function": "getRegime"
-      },
-      {
-        "source": "/api/market-data",
-        "function": "getMarketData"
-      },
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
-  },
-  "functions": {
-    "source": "functions",
-    "runtime": "nodejs20",
-    "secrets": ["FRED_API_KEY", "ALPHA_VANTAGE_API_KEY"],
-    "timeoutSeconds": 60
-  }
-}
 }

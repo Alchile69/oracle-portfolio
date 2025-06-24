@@ -27,7 +27,7 @@ jobs:
       - name: Create and Install Python Dependencies in venv
         run: |
           cd functions-python
-          python3.10 -m venv venv  # Créer l'environnement virtuel
+          python3.10 -m venv venv  # Créer l'environnement virtuel (dans functions-python/venv)
           source venv/bin/activate # Activer l'environnement virtuel pour cette étape
           pip install --upgrade pip
           pip install -r requirements.txt
@@ -35,17 +35,13 @@ jobs:
 
       - name: Deploy to Staging
         if: github.ref == 'refs/heads/staging'
-        run: |
-          cd functions-python
-          source venv/bin/activate # Réactiver l'environnement virtuel pour le déploiement
-          firebase deploy --only functions:python --project oracle-portfolio-staging --token "${{ secrets.FIREBASE_TOKEN }}"
+        run: firebase deploy --only functions:python --project oracle-portfolio-staging --token "${{ secrets.FIREBASE_TOKEN }}"
+        # IMPORTANT : Pas de 'cd functions-python' ici. firebase deploy s'exécute depuis la racine du dépôt.
 
       - name: Deploy to Production
         if: github.ref == 'refs/heads/main'
-        run: |
-          cd functions-python
-          source venv/bin/activate # Réactiver l'environnement virtuel pour le déploiement
-          firebase deploy --only functions:python --project oracle-portfolio-prod --token "${{ secrets.FIREBASE_TOKEN }}"
+        run: firebase deploy --only functions:python --project oracle-portfolio-prod --token "${{ secrets.FIREBASE_TOKEN }}"
+        # IMPORTANT : Pas de 'cd functions-python' ici.
 
       - name: Health Check
         run: |

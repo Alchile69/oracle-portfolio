@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
   "functions": [
     {
       "source": "functions",
@@ -35,7 +34,7 @@
       "enabled": true,
       "port": 4000
     }
-=======
+  },
   "hosting": {
     "public": "dist",
     "site": "oracle-portfolio-prod",
@@ -70,12 +69,5 @@
         "destination": "/index.html"
       }
     ]
-  },
-  "functions": {
-    "source": "functions",
-    "runtime": "nodejs20",
-    "secrets": ["FRED_API_KEY", "ALPHA_VANTAGE_API_KEY"],
-    "timeoutSeconds": 60
->>>>>>> 00d63acb8d09c2c12e1b784245407083d0c81b5f
   }
 }

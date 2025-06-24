@@ -27,8 +27,11 @@ jobs:
       - name: Install Python Dependencies
         run: |
           cd functions-python
-          python -m pip install --upgrade pip
+          python3.10 -m venv venv  # Créer l'environnement virtuel
+          source venv/bin/activate # Activer l'environnement virtuel
+          pip install --upgrade pip
           pip install -r requirements.txt
+          deactivate # Désactiver après l'installation
 
       - name: Deploy to Staging
         if: github.ref == 'refs/heads/staging'

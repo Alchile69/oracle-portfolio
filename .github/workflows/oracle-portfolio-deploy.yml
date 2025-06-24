@@ -27,21 +27,33 @@ jobs:
       - name: Create and Install Python Dependencies in venv
         run: |
           cd functions-python
-          python3.10 -m venv venv  # Créer l'environnement virtuel (dans functions-python/venv)
+          python3.10 -m venv venv  # Créer l'environnement virtuel
           source venv/bin/activate # Activer l'environnement virtuel pour cette étape
           pip install --upgrade pip
           pip install -r requirements.txt
           deactivate # Désactiver après l'installation
 
+      - name: Debug: List functions-python directory contents
+        run: ls -la functions-python/
+
+      - name: Debug: List functions-python/venv directory contents
+        run: ls -la functions-python/venv/
+
       - name: Deploy to Staging
         if: github.ref == 'refs/heads/staging'
-        run: firebase deploy --only functions:python --project oracle-portfolio-staging --token "${{ secrets.FIREBASE_TOKEN }}"
-        # IMPORTANT : Pas de 'cd functions-python' ici. firebase deploy s'exécute depuis la racine du dépôt.
+        run: |
+          cd functions-python # Se déplacer dans le répertoire des fonctions Python
+          source venv/bin/activate # Activer l'environnement virtuel
+          firebase deploy --only functions --project oracle-portfolio-staging --token "${{ secrets.FIREBASE_TOKEN }}"
+          # Note: --only functions (pas functions:python) car nous sommes déjà dans le répertoire de la codebase.
 
       - name: Deploy to Production
         if: github.ref == 'refs/heads/main'
-        run: firebase deploy --only functions:python --project oracle-portfolio-prod --token "${{ secrets.FIREBASE_TOKEN }}"
-        # IMPORTANT : Pas de 'cd functions-python' ici.
+        run: |
+          cd functions-python # Se déplacer dans le répertoire des fonctions Python
+          source venv/bin/activate # Activer l'environnement virtuel
+          firebase deploy --only functions --project oracle-portfolio-prod --token "${{ secrets.FIREBASE_TOKEN }}"
+          # Note: --only functions (pas functions:python) car nous sommes déjà dans le répertoire de la codebase.
 
       - name: Health Check
         run: |

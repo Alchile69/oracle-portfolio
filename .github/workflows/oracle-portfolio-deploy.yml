@@ -26,34 +26,35 @@ jobs:
 
       - name: Create and Install Python Dependencies in venv
         run: |
+          set -x # Active le mode débogage pour voir les commandes exécutées
           cd functions-python
           python3.10 -m venv venv  # Créer l'environnement virtuel
+          ls -la venv/bin/ # Debug: Vérifie le contenu du dossier bin du venv
           source venv/bin/activate # Activer l'environnement virtuel pour cette étape
+          which python # Debug: Vérifie quel python est actif
           pip install --upgrade pip
           pip install -r requirements.txt
           deactivate # Désactiver après l'installation
 
-      - name: Debug: List functions-python directory contents
-        run: ls -la functions-python/
-
-      - name: Debug: List functions-python/venv directory contents
-        run: ls -la functions-python/venv/
-
       - name: Deploy to Staging
         if: github.ref == 'refs/heads/staging'
         run: |
+          set -x # Active le mode débogage pour cette étape
           cd functions-python # Se déplacer dans le répertoire des fonctions Python
+          ls -la venv/bin/ # Debug: Vérifie le contenu du dossier bin du venv juste avant le déploiement
           source venv/bin/activate # Activer l'environnement virtuel
+          which python # Debug: Vérifie quel python est actif juste avant le déploiement
           firebase deploy --only functions --project oracle-portfolio-staging --token "${{ secrets.FIREBASE_TOKEN }}"
-          # Note: --only functions (pas functions:python) car nous sommes déjà dans le répertoire de la codebase.
 
       - name: Deploy to Production
         if: github.ref == 'refs/heads/main'
         run: |
+          set -x # Active le mode débogage pour cette étape
           cd functions-python # Se déplacer dans le répertoire des fonctions Python
+          ls -la venv/bin/ # Debug: Vérifie le contenu du dossier bin du venv juste avant le déploiement
           source venv/bin/activate # Activer l'environnement virtuel
+          which python # Debug: Vérifie quel python est actif juste avant le déploiement
           firebase deploy --only functions --project oracle-portfolio-prod --token "${{ secrets.FIREBASE_TOKEN }}"
-          # Note: --only functions (pas functions:python) car nous sommes déjà dans le répertoire de la codebase.
 
       - name: Health Check
         run: |

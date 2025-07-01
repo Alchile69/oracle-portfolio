@@ -34,20 +34,23 @@ jobs:
           cd functions
           npm ci
           
-      - name: Create Python venv and Deploy to Staging
+      - name: Create Python venv, install dependencies and deploy
         run: |
-          echo "Creating Python virtual environment in functions-python..."
+          echo "=== Creating Python virtual environment ==="
           cd functions-python
           python3 -m venv venv
-          . venv/bin/activate
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          echo "Python venv created and dependencies installed"
+          echo "=== Installing dependencies ==="
+          ./venv/bin/pip install --upgrade pip
+          ./venv/bin/pip install -r requirements.txt
+          echo "=== Verifying venv exists ==="
+          ls -la venv/
           ls -la venv/bin/
+          echo "=== Going back to project root ==="
+          cd ..
           echo "Current directory: $(pwd)"
-          echo "Contents of current directory:"
-          ls -la
-          echo "Deploying to Firebase from functions-python directory..."
+          echo "=== Verifying venv from root ==="
+          ls -la functions-python/venv/
+          echo "=== Deploying to Firebase ==="
           firebase deploy --only functions:python --project oracle-portfolio-staging --token "$FIREBASE_TOKEN"
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
@@ -83,15 +86,17 @@ jobs:
           cd functions
           npm ci
           
-      - name: Create Python venv and Deploy to Production
+      - name: Create Python venv, install dependencies and deploy
         run: |
-          echo "Creating Python virtual environment in functions-python..."
+          echo "=== Creating Python virtual environment ==="
           cd functions-python
           python3 -m venv venv
-          . venv/bin/activate
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          echo "Deploying to Firebase from functions-python directory..."
+          echo "=== Installing dependencies ==="
+          ./venv/bin/pip install --upgrade pip
+          ./venv/bin/pip install -r requirements.txt
+          echo "=== Going back to project root ==="
+          cd ..
+          echo "=== Deploying to Firebase ==="
           firebase deploy --only functions:python --project oracle-portfolio-prod --token "$FIREBASE_TOKEN"
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

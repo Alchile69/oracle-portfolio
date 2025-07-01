@@ -34,8 +34,9 @@ jobs:
           cd functions
           npm ci
           
-      - name: Create and setup Python virtual environment
+      - name: Create Python venv and Deploy to Staging
         run: |
+          echo "Creating Python virtual environment in functions-python..."
           cd functions-python
           python3 -m venv venv
           . venv/bin/activate
@@ -43,14 +44,9 @@ jobs:
           pip install -r requirements.txt
           echo "Python venv created and dependencies installed"
           ls -la venv/bin/
-          
-      - name: Deploy to Staging
-        working-directory: functions-python
-        run: |
-          echo "Activating Python virtual environment..."
-          . venv/bin/activate
-          echo "Python environment activated"
           echo "Current directory: $(pwd)"
+          echo "Contents of current directory:"
+          ls -la
           echo "Deploying to Firebase from functions-python directory..."
           firebase deploy --only functions:python --project oracle-portfolio-staging --token "$FIREBASE_TOKEN"
         env:
@@ -87,20 +83,14 @@ jobs:
           cd functions
           npm ci
           
-      - name: Create and setup Python virtual environment
+      - name: Create Python venv and Deploy to Production
         run: |
+          echo "Creating Python virtual environment in functions-python..."
           cd functions-python
           python3 -m venv venv
           . venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt
-          
-      - name: Deploy to Production
-        working-directory: functions-python
-        run: |
-          echo "Activating Python virtual environment..."
-          . venv/bin/activate
-          echo "Python environment activated"
           echo "Deploying to Firebase from functions-python directory..."
           firebase deploy --only functions:python --project oracle-portfolio-prod --token "$FIREBASE_TOKEN"
         env:

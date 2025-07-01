@@ -16,7 +16,7 @@
       "codebase": "python",
       "runtime": "python311",
       "predeploy": [
-        "cd functions-python && python3 -m venv venv && . venv/bin/activate && pip install --upgrade pip && pip install -r requirements.txt && ls -la venv && ls -la venv/bin"
+        "cd functions-python && rm -rf venv && python3 -m venv venv && ./venv/bin/pip install --upgrade pip && ./venv/bin/pip install -r requirements.txt && ls -la venv/bin/ && ./venv/bin/pip list | grep functions-framework"
       ],
       "ignore": [
         "node_modules",

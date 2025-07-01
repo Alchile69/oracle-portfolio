@@ -1,69 +1,135 @@
+# Force GitHub Actions re-scan
 name: Deploy Oracle Portfolio 3.0
 
 on:
   push:
-    branches:
-      - staging
-      - main
-    paths:
-      - 'functions-python/**'
+    branches: [ staging ]
   workflow_dispatch:
 
 jobs:
-  deploy-oracle-portfolio:
+  test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: functions/package-lock.json
+      - name: Install Node.js dependencies
+        run: |
+          cd functions
+          npm ci
+      - name: Run Node.js tests
+        run: |
+          cd functions
+          npm test
 
-      - name: Setup Python 3.10
+  deploy-staging:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/staging'
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: functions/package-lock.json
+          
+      - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
-
-      - name: Create and Install Python Dependencies in venv
+          
+      - name: Install Node.js dependencies
         run: |
-          set -x # Active le mode débogage pour voir les commandes exécutées
+          cd functions
+          npm ci
+          
+      - name: Create and setup Python virtual environment
+        run: |
           cd functions-python
-          python3.10 -m venv venv  # Créer l'environnement virtuel
-          ls -la venv/bin/ # Debug: Vérifie le contenu du dossier bin du venv
-          source venv/bin/activate # Activer l'environnement virtuel pour cette étape
-          which python # Debug: Vérifie quel python est actif
+          python3.10 -m venv venv
+          source venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt
-          deactivate # Désactiver après l'installation
-
+          echo "Python venv created and dependencies installed"
+          ls -la venv/bin/
+          
+      - name: Debug Python environment
+        run: |
+          cd functions-python
+          echo "Current directory: $(pwd)"
+          echo "Contents of functions-python:"
+          ls -la
+          echo "Contents of venv:"
+          ls -la venv/ || echo "venv directory not found"
+          echo "Contents of venv/bin:"
+          ls -la venv/bin/ || echo "venv/bin directory not found"
+          echo "Python version:"
+          python3.10 --version
+          echo "Pip version:"
+          pip --version || echo "pip not found"
+          
       - name: Deploy to Staging
-        if: github.ref == 'refs/heads/staging'
         run: |
-          set -x # Active le mode débogage pour cette étape
-          cd functions-python # Se déplacer dans le répertoire des fonctions Python
-          ls -la venv/bin/ # Debug: Vérifie le contenu du dossier bin du venv juste avant le déploiement
-          source venv/bin/activate # Activer l'environnement virtuel
-          which python # Debug: Vérifie quel python est actif juste avant le déploiement
-          firebase deploy --only functions --project oracle-portfolio-staging --token "${{ secrets.FIREBASE_TOKEN }}"
+          cd functions-python
+          echo "Activating Python virtual environment..."
+          source venv/bin/activate
+          echo "Python environment activated"
+          cd ..
+          echo "Deploying to Firebase..."
+          firebase deploy --only functions:python --project oracle-portfolio-staging --token "$FIREBASE_TOKEN"
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          ALPHA_VANTAGE_KEY: ${{ secrets.ALPHA_VANTAGE_KEY }}
+          EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
 
+  deploy-production:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/staging' && success()
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: functions/package-lock.json
+          
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Install Node.js dependencies
+        run: |
+          cd functions
+          npm ci
+          
+      - name: Create and setup Python virtual environment
+        run: |
+          cd functions-python
+          python3.10 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          
       - name: Deploy to Production
-        if: github.ref == 'refs/heads/main'
         run: |
-          set -x # Active le mode débogage pour cette étape
-          cd functions-python # Se déplacer dans le répertoire des fonctions Python
-          ls -la venv/bin/ # Debug: Vérifie le contenu du dossier bin du venv juste avant le déploiement
-          source venv/bin/activate # Activer l'environnement virtuel
-          which python # Debug: Vérifie quel python est actif juste avant le déploiement
-          firebase deploy --only functions --project oracle-portfolio-prod --token "${{ secrets.FIREBASE_TOKEN }}"
-
-      - name: Health Check
-        run: |
-          if [ "${{ github.ref }}" == "refs/heads/staging" ]; then
-            PROJECT="oracle-portfolio-staging"
-          else
-            PROJECT="oracle-portfolio-prod"
-          fi
-          echo "Testing Oracle Portfolio 3.0 health on $PROJECT..."
-          curl -f "https://us-central1-$PROJECT.cloudfunctions.net/getSystemHealth" || exit 1
-          echo "✅ Oracle Portfolio 3.0 deployed successfully!"
-# Temporary comment
+          cd functions-python
+          source venv/bin/activate
+          cd ..
+          firebase deploy --only functions:python --project oracle-portfolio-prod --token "$FIREBASE_TOKEN"
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          ALPHA_VANTAGE_KEY: ${{ secrets.ALPHA_VANTAGE_KEY }}
+          EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}

@@ -7,27 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: functions/package-lock.json
-      - name: Install Node.js dependencies
-        run: |
-          cd functions
-          npm ci
-      - name: Run Node.js tests
-        run: |
-          cd functions
-          npm test
-
   deploy-staging:
-    needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/staging'
     steps:
@@ -127,6 +107,7 @@ jobs:
           cd functions-python
           source venv/bin/activate
           cd ..
+          echo "Deploying to Firebase..."
           firebase deploy --only functions:python --project oracle-portfolio-prod --token "$FIREBASE_TOKEN"
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

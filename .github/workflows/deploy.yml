@@ -38,7 +38,7 @@ jobs:
         run: |
           cd functions-python
           python3 -m venv venv
-          source venv/bin/activate
+          . venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt
           echo "Python venv created and dependencies installed"
@@ -48,11 +48,11 @@ jobs:
         run: |
           cd functions-python
           echo "Activating Python virtual environment..."
-          source venv/bin/activate
+          . venv/bin/activate
           echo "Python environment activated"
-          cd ..
-          echo "Deploying to Firebase..."
-          firebase deploy --only functions:python --project oracle-portfolio-staging --token "$FIREBASE_TOKEN"
+          echo "Current directory: $(pwd)"
+          echo "Deploying to Firebase from functions-python directory..."
+          firebase deploy --only functions:python --project oracle-portfolio-staging --token "$FIREBASE_TOKEN" --cwd ..
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
           ALPHA_VANTAGE_KEY: ${{ secrets.ALPHA_VANTAGE_KEY }}

@@ -27,7 +27,7 @@ jobs:
           
       - name: Install Firebase CLI
         run: |
-          npm install -g firebase-tools
+          npm install -g firebase-tools@latest
           
       - name: Install Node.js dependencies
         run: |
@@ -36,7 +36,7 @@ jobs:
           
       - name: Deploy to Staging
         run: |
-          echo "Deploying to Firebase (predeploy will handle Python venv)..."
+          echo "Deploying to Firebase (predeploy will handle Python venv with detailed logs)..."
           firebase deploy --only functions:python --project oracle-portfolio-staging --token "$FIREBASE_TOKEN"
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
@@ -65,7 +65,7 @@ jobs:
           
       - name: Install Firebase CLI
         run: |
-          npm install -g firebase-tools
+          npm install -g firebase-tools@latest
           
       - name: Install Node.js dependencies
         run: |

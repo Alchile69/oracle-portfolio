@@ -34,36 +34,9 @@ jobs:
           cd functions
           npm ci
           
-      - name: Create Python venv EVERYWHERE and deploy
+      - name: Deploy to Staging
         run: |
-          echo "=== Creating Python venv in functions-python ==="
-          cd functions-python
-          python3 -m venv venv
-          ./venv/bin/pip install --upgrade pip
-          ./venv/bin/pip install -r requirements.txt
-          echo "=== Verifying venv in functions-python ==="
-          ls -la venv/bin/
-          
-          echo "=== Creating SYMLINK venv at root ==="
-          cd ..
-          ln -sf functions-python/venv venv
-          echo "=== Verifying symlink ==="
-          ls -la venv/
-          
-          echo "=== Creating COPY of venv at root ==="
-          cp -r functions-python/venv ./venv-root
-          echo "=== Verifying copy ==="
-          ls -la venv-root/
-          
-          echo "=== Final verification ==="
-          echo "functions-python/venv:"
-          ls -la functions-python/venv/bin/ | head -5
-          echo "Root venv symlink:"
-          ls -la venv/ | head -5
-          echo "Root venv copy:"
-          ls -la venv-root/ | head -5
-          
-          echo "=== Deploying to Firebase ==="
+          echo "Deploying to Firebase (predeploy will handle Python venv)..."
           firebase deploy --only functions:python --project oracle-portfolio-staging --token "$FIREBASE_TOKEN"
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
@@ -99,15 +72,9 @@ jobs:
           cd functions
           npm ci
           
-      - name: Create Python venv EVERYWHERE and deploy
+      - name: Deploy to Production
         run: |
-          cd functions-python
-          python3 -m venv venv
-          ./venv/bin/pip install --upgrade pip
-          ./venv/bin/pip install -r requirements.txt
-          cd ..
-          ln -sf functions-python/venv venv
-          cp -r functions-python/venv ./venv-root
+          echo "Deploying to Firebase (predeploy will handle Python venv)..."
           firebase deploy --only functions:python --project oracle-portfolio-prod --token "$FIREBASE_TOKEN"
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

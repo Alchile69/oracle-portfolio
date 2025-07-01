@@ -14,7 +14,7 @@
     {
       "source": "functions-python",
       "codebase": "python",
-      "runtime": "python310",
+      "runtime": "python311",
       "ignore": [
         "node_modules",
         ".git",

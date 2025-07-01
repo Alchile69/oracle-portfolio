@@ -25,6 +25,10 @@ jobs:
         with:
           python-version: '3.11'
           
+      - name: Install Firebase CLI
+        run: |
+          npm install -g firebase-tools
+          
       - name: Install Node.js dependencies
         run: |
           cd functions

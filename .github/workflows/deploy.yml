@@ -1,0 +1,164 @@
+# Force GitHub Actions re-scan
+name: Deploy Oracle Portfolio 3.0 (GCP Functions)
+
+on:
+  push:
+    branches:
+      - staging
+      - main
+  workflow_dispatch:
+
+env:
+  PROJECT_ID_STAGING: oracle-portfolio-staging
+  PROJECT_ID_PROD: oracle-portfolio-prod
+  GCP_REGION: us-central1 # Assurez-vous que c'est la bonne région pour vos fonctions
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/staging'
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Node.js dependencies
+        run: |
+          cd functions
+          npm ci
+
+      - name: Install Python dependencies
+        run: |
+          cd functions-python
+          python3 -m venv venv
+          . venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+        
+      - name: Deploy Python Functions to Staging
+        run: |
+          cd functions-python
+          . venv/bin/activate
+          
+          # Liste des fonctions à déployer
+          FUNCTIONS=(
+            getAllocations
+            getRegime
+            getMarketData
+            getCountries
+            getSystemHealth
+            getMultiRegime
+            getIndicatorsBreakdown
+            getIntegratedDashboard
+          )
+
+          # Déploiement en parallèle
+          for func in "${FUNCTIONS[@]}"; do
+            echo "Deploying $func to staging..."
+            gcloud functions deploy "$func" \
+              --runtime python311 \
+              --trigger-http \
+              --allow-unauthenticated \
+              --source . \
+              --entry-point "$func" \
+              --region ${{ env.GCP_REGION }} \
+              --project ${{ env.PROJECT_ID_STAGING }} & # Le & permet le déploiement en arrière-plan
+          done
+          wait # Attend que tous les déploiements en arrière-plan soient terminés
+        env:
+          ALPHA_VANTAGE_KEY: ${{ secrets.ALPHA_VANTAGE_KEY }}
+          EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+
+  deploy-production:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && success( ) # Déclenchement sur la branche main
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY_PROD }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Node.js dependencies
+        run: |
+          cd functions
+          npm ci
+
+      - name: Install Python dependencies
+        run: |
+          cd functions-python
+          python3 -m venv venv
+          . venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Deploy Python Functions to Production
+        run: |
+          cd functions-python
+          . venv/bin/activate
+          
+          # Liste des fonctions à déployer
+          FUNCTIONS=(
+            getAllocations
+            getRegime
+            getMarketData
+            getCountries
+            getSystemHealth
+            getMultiRegime
+            getIndicatorsBreakdown
+            getIntegratedDashboard
+          )
+
+          # Déploiement en parallèle
+          for func in "${FUNCTIONS[@]}"; do
+            echo "Deploying $func to production..."
+            gcloud functions deploy "$func" \
+              --runtime python311 \
+              --trigger-http \
+              --allow-unauthenticated \
+              --source . \
+              --entry-point "$func" \
+              --region ${{ env.GCP_REGION }} \
+              --project ${{ env.PROJECT_ID_PROD }} & # Le & permet le déploiement en arrière-plan
+          done
+          wait # Attend que tous les déploiements en arrière-plan soient terminés
+        env:
+          ALPHA_VANTAGE_KEY: ${{ secrets.ALPHA_VANTAGE_KEY }}
+          EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}

@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
   "functions": [
     {
       "source": "functions",
@@ -15,7 +14,7 @@
     {
       "source": "functions-python",
       "codebase": "python",
-      "runtime": "python310",
+      "runtime": "python311",
       "ignore": [
         "node_modules",
         ".git",
@@ -27,15 +26,6 @@
       ]
     }
   ],
-  "emulators": {
-    "functions": {
-      "port": 5001
-    },
-    "ui": {
-      "enabled": true,
-      "port": 4000
-    }
-=======
   "hosting": {
     "public": "dist",
     "site": "oracle-portfolio-prod",
@@ -71,11 +61,13 @@
       }
     ]
   },
-  "functions": {
-    "source": "functions",
-    "runtime": "nodejs20",
-    "secrets": ["FRED_API_KEY", "ALPHA_VANTAGE_API_KEY"],
-    "timeoutSeconds": 60
->>>>>>> 00d63acb8d09c2c12e1b784245407083d0c81b5f
+  "emulators": {
+    "functions": {
+      "port": 5001
+    },
+    "ui": {
+      "enabled": true,
+      "port": 4000
+    }
   }
 }

@@ -29,18 +29,41 @@ interface ETFData {
 }
 
 interface BacktestingData {
+  monthly_data: Array<{
+    date: string;
+    country: string;
+    allocation: {
+      actions: number;
+      obligations: number;
+      or: number;
+      liquidites: number;
+    };
+    etf_prices: {
+      spy_price: number;
+      tlt_price: number;
+      gld_price: number;
+      hyg_price: number;
+    };
+    returns: {
+      oracle: number;
+      benchmark: number;
+      spy: number;
+      tlt: number;
+      gld: number;
+      hyg: number;
+    };
+  }>;
   cumulative_performance: Array<{
     date: string;
     oracle_cumulative: number;
     benchmark_cumulative: number;
   }>;
-  performance_metrics: {
-    total_return_oracle: number;
-    total_return_benchmark: number;
-    volatility_oracle: number;
-    volatility_benchmark: number;
-    sharpe_ratio_oracle: number;
-    sharpe_ratio_benchmark: number;
+  data_quality: {
+    source: string;
+    total_months: number;
+    missing_data: number;
+    last_update: string;
+    calculation_time: string;
   };
 }
 
@@ -509,29 +532,33 @@ const Dashboard: React.FC = () => {
                   <div className="bg-gray-700 rounded-lg p-3 text-center">
                     <div className="text-xs text-gray-400">Rendement Oracle</div>
                     <div className="text-lg font-bold text-teal-400">
-                      {(backtestingData.performance_metrics.total_return_oracle * 100).toFixed(1)}%
+                      {backtestingData.cumulative_performance.length > 0 ? 
+                        ((backtestingData.cumulative_performance[backtestingData.cumulative_performance.length - 1].oracle_cumulative - 1) * 100).toFixed(1) : '0.0'}%
                     </div>
                   </div>
                   <div className="bg-gray-700 rounded-lg p-3 text-center">
                     <div className="text-xs text-gray-400">Rendement Benchmark</div>
                     <div className="text-lg font-bold text-blue-400">
-                      {(backtestingData.performance_metrics.total_return_benchmark * 100).toFixed(1)}%
+                      {backtestingData.cumulative_performance.length > 0 ? 
+                        ((backtestingData.cumulative_performance[backtestingData.cumulative_performance.length - 1].benchmark_cumulative - 1) * 100).toFixed(1) : '0.0'}%
                     </div>
                   </div>
                   <div className="bg-gray-700 rounded-lg p-3 text-center">
-                    <div className="text-xs text-gray-400">Sharpe Oracle</div>
-                    <div className="text-lg font-bold text-white">
-                      {backtestingData.performance_metrics.sharpe_ratio_oracle.toFixed(2)}
+                    <div className="text-xs text-gray-400">Surperformance</div>
+                    <div className="text-lg font-bold text-green-400">
+                      {backtestingData.cumulative_performance.length > 0 ? 
+                        (((backtestingData.cumulative_performance[backtestingData.cumulative_performance.length - 1].oracle_cumulative - 
+                           backtestingData.cumulative_performance[backtestingData.cumulative_performance.length - 1].benchmark_cumulative)) * 100).toFixed(1) : '0.0'}%
                     </div>
                   </div>
                   <div className="bg-gray-700 rounded-lg p-3 text-center">
-                    <div className="text-xs text-gray-400">Volatilité Oracle</div>
-                    <div className="text-lg font-bold text-white">
-                      {(backtestingData.performance_metrics.volatility_oracle * 100).toFixed(1)}%
+                    <div className="text-xs text-gray-400">Données</div>
+                    <div className="text-lg font-bold text-gray-300">
+                      {backtestingData.data_quality.total_months} mois
                     </div>
                   </div>
                 </div>
-
+                
                 {/* Charts */}
                 <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
                   <div>

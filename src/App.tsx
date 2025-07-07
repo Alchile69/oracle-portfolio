@@ -1,68 +1,178 @@
 import React, { useState, useEffect } from 'react';
 
-function App() {
-  const [marketData, setMarketData] = useState(null);
-  const [loading, setLoading] = useState(true);
+// Hook useMarketStress simplifié
+const useMarketStress = () => {
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('https://us-central1-oracle-portfolio-prod.cloudfunctions.net/getMarketStress');
+      const result = await response.json();
+      
+      // Adapter la structure des données
+      setData({
+        stress_level: result.stress_level,
+        vix: result.vix,
+        high_yield_spread: result.high_yield_spread,
+        last_update: result.last_update || result.timestamp,
+        data_sources: {
+          vix: result.data_sources?.vix || 'FRED',
+          spread: result.data_sources?.spread || 'FRED'
+        }
+      });
+      setError(null);
+    } catch (err) {
+      setError(err);
+      console.error('Error fetching market stress:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchMarketData = async () => {
-      try {
-        const response = await fetch('https://us-central1-oracle-portfolio-prod.cloudfunctions.net/getMarketStress');
-        const data = await response.json();
-        setMarketData(data);
-      } catch (error) {
-        console.error('Erreur API:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMarketData();
+    fetchData();
+    const interval = setInterval(fetchData, 5 * 60 * 1000);
+    return () => clearInterval(interval);
   }, []);
 
+  return { data, isLoading, error, refetch: fetchData };
+};
+
+// Composant MarketStressCard simplifié
+const MarketStressCard = () => {
+  const { data, isLoading, error, refetch } = useMarketStress();
+  
+  if (error) {
+    return (
+      <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
+        <h3 className="text-lg font-semibold mb-4 text-white">Market Stress Indicators</h3>
+        <div className="text-red-400 text-center py-8">
+          Failed to load market stress data. Please try again.
+          <button onClick={refetch} className="block mt-2 text-blue-400 underline">
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold text-white">Market Stress Indicators</h3>
+        <button onClick={refetch} className="text-gray-400 hover:text-white">
+          🔄
+        </button>
+      </div>
+      
+      {isLoading ? (
+        <div className="text-gray-400">Chargement...</div>
+      ) : data ? (
+        <>
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center">
+              <h4 className="font-bold text-lg text-white">
+                Niveau de stress: 
+              </h4>
+              <span className={`ml-2 font-bold ${
+                data.stress_level === 'EXTRÊME' ? 'text-red-400' :
+                data.stress_level === 'ÉLEVÉ' ? 'text-orange-400' :
+                data.stress_level === 'MODÉRÉ' ? 'text-yellow-400' :
+                'text-green-400'
+              }`}>
+                {data.stress_level}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-6">
+            {/* VIX Gauge */}
+            <div className="text-center">
+              <div className="relative w-24 h-24 mx-auto mb-2">
+                <svg className="w-24 h-24 transform -rotate-90">
+                  <circle
+                    cx="48"
+                    cy="48"
+                    r="40"
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    fill="none"
+                    className="text-gray-700"
+                  />
+                  <circle
+                    cx="48"
+                    cy="48"
+                    r="40"
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    fill="none"
+                    strokeDasharray={`${(data.vix / 50) * 251.2} 251.2`}
+                    className="text-blue-500"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-xl font-bold text-white">{data.vix}</span>
+                </div>
+              </div>
+              <p className="text-sm text-gray-400">VIX</p>
+              <p className="text-xs text-gray-500">Source: {data.data_sources?.vix || 'FRED'}</p>
+            </div>
+
+            {/* High Yield Spread Gauge */}
+            <div className="text-center">
+              <div className="relative w-24 h-24 mx-auto mb-2">
+                <svg className="w-24 h-24 transform -rotate-90">
+                  <circle
+                    cx="48"
+                    cy="48"
+                    r="40"
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    fill="none"
+                    className="text-gray-700"
+                  />
+                  <circle
+                    cx="48"
+                    cy="48"
+                    r="40"
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    fill="none"
+                    strokeDasharray={`${(data.high_yield_spread / 15) * 251.2} 251.2`}
+                    className="text-red-500"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-xl font-bold text-white">{data.high_yield_spread}</span>
+                </div>
+              </div>
+              <p className="text-sm text-gray-400">High Yield Spread</p>
+              <p className="text-xs text-gray-500">Source: {data.data_sources?.spread || 'FRED'}</p>
+            </div>
+          </div>
+
+          <div className="mt-4 text-xs text-gray-500 text-center">
+            Updated: {new Date(data.last_update).toLocaleString('fr-FR')}
+          </div>
+        </>
+      ) : (
+        <div className="text-red-400">No data available</div>
+      )}
+    </div>
+  );
+};
+
+function App() {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
       <h1 className="text-3xl font-bold mb-8">Oracle Portfolio | Financial Dashboard</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Market Stress Card */}
-        <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
-          <h3 className="text-lg font-semibold mb-4 text-white">Market Stress Indicators</h3>
-          {loading ? (
-            <div className="text-gray-400">Chargement...</div>
-          ) : marketData ? (
-            <>
-              <div className="text-center mb-4">
-                <div className="text-3xl font-bold text-white mb-1">
-                  {marketData.data?.metrics?.vix || 'N/A'}
-                </div>
-                <div className="text-sm text-gray-400">VIX</div>
-              </div>
-              <div className="text-center mb-4">
-                <div className="text-3xl font-bold text-white mb-1">
-                  {marketData.data?.metrics?.high_yield_spread || 'N/A'}
-                </div>
-                <div className="text-sm text-gray-400">High Yield Spread</div>
-              </div>
-              <div className="mt-4">
-                <span className="text-sm text-gray-300">Niveau de stress: </span>
-                <span className={`font-bold ${
-                  marketData.data?.stress_level === 'EXTRÊME' ? 'text-red-400' :
-                  marketData.data?.stress_level === 'ÉLEVÉ' ? 'text-orange-400' :
-                  marketData.data?.stress_level === 'MODÉRÉ' ? 'text-yellow-400' :
-                  'text-green-400'
-                }`}>
-                  {marketData.data?.stress_level || 'N/A'}
-                </span>
-              </div>
-              <div className="mt-2 text-xs text-gray-500">
-                Sources: {marketData.data?.sources?.join(', ') || 'FRED API'}
-              </div>
-            </>
-          ) : (
-            <div className="text-red-400">Erreur de chargement</div>
-          )}
-        </div>
+        {/* Market Stress Card avec vraies données */}
+        <MarketStressCard />
         
         {/* Economic Regime */}
         <div className="bg-gray-800 rounded-lg p-6 shadow-lg">

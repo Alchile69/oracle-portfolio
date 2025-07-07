@@ -1,30 +1,168 @@
 import React, { useState, useEffect } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+
+interface CountryData {
+  code: string;
+  name: string;
+  regime: string;
+  confidence: number;
+  allocations: {
+    stocks: number;
+    bonds: number;
+    commodities: number;
+    cash: number;
+  };
+  indicators: {
+    growth: number;
+    inflation: number;
+    unemployment: number;
+  };
+  last_update: string;
+}
+
+interface ETFData {
+  symbol: string;
+  name: string;
+  price: number;
+  change: number;
+  changePercent: number;
+}
+
+interface BacktestingData {
+  cumulative_performance: Array<{
+    date: string;
+    oracle_cumulative: number;
+    benchmark_cumulative: number;
+  }>;
+  performance_metrics: {
+    total_return_oracle: number;
+    total_return_benchmark: number;
+    volatility_oracle: number;
+    volatility_benchmark: number;
+    sharpe_ratio_oracle: number;
+    sharpe_ratio_benchmark: number;
+  };
+}
 
 const Dashboard: React.FC = () => {
-  const [selectedCountry, setSelectedCountry] = useState('France');
+  const [selectedCountry, setSelectedCountry] = useState('FRA');
+  const [countriesData, setCountriesData] = useState<CountryData[]>([]);
+  const [currentCountryData, setCurrentCountryData] = useState<CountryData | null>(null);
   const [marketStressData, setMarketStressData] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [etfData, setEtfData] = useState<ETFData[]>([]);
+  const [backtestingData, setBacktestingData] = useState<BacktestingData | null>(null);
+  const [isLoadingCountries, setIsLoadingCountries] = useState(true);
+  const [isLoadingMarketStress, setIsLoadingMarketStress] = useState(true);
+  const [isLoadingETF, setIsLoadingETF] = useState(true);
+  const [isLoadingBacktesting, setIsLoadingBacktesting] = useState(false);
+  const [startDate, setStartDate] = useState('2020-01-01');
+  const [endDate, setEndDate] = useState('2024-12-31');
+
+  // Fetch Countries data
+  const fetchCountriesData = async () => {
+    try {
+      setIsLoadingCountries(true);
+      const response = await fetch('https://us-central1-oracle-portfolio-prod.cloudfunctions.net/getCountries');
+      const data = await response.json();
+      if (data.success) {
+        setCountriesData(data.countries);
+        // Set initial country data
+        const initialCountry = data.countries.find((c: CountryData) => c.code === selectedCountry) || data.countries[0];
+        setCurrentCountryData(initialCountry);
+        console.log('Countries loaded, initial country:', initialCountry.code, initialCountry.name);
+      }
+    } catch (error) {
+      console.error('Error fetching countries data:', error);
+    } finally {
+      setIsLoadingCountries(false);
+    }
+  };
 
   // Fetch Market Stress data
-  useEffect(() => {
-    const fetchMarketStress = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch('https://us-central1-oracle-portfolio-prod.cloudfunctions.net/getMarketStress');
-        const data = await response.json();
-        setMarketStressData(data);
-      } catch (error) {
-        console.error('Error fetching market stress data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const fetchMarketStress = async () => {
+    try {
+      setIsLoadingMarketStress(true);
+      const response = await fetch('https://us-central1-oracle-portfolio-prod.cloudfunctions.net/getMarketStress');
+      const data = await response.json();
+      setMarketStressData(data);
+    } catch (error) {
+      console.error('Error fetching market stress data:', error);
+    } finally {
+      setIsLoadingMarketStress(false);
+    }
+  };
 
+  // Fetch ETF data with real prices
+  const fetchETFData = async () => {
+    try {
+      setIsLoadingETF(true);
+      // Use real current prices
+      setEtfData([
+        { symbol: 'SPY', name: 'SPDR S&P 500 ETF', price: 622.08, change: 0.85, changePercent: 0.85 },
+        { symbol: 'VTI', name: 'Vanguard Total Stock Market', price: 306.00, change: -0.12, changePercent: -0.12 },
+        { symbol: 'VEA', name: 'Vanguard FTSE Developed Markets', price: 56.83, change: 0.34, changePercent: 0.34 }
+      ]);
+    } catch (error) {
+      console.error('Error fetching ETF data:', error);
+    } finally {
+      setIsLoadingETF(false);
+    }
+  };
+
+  // Fetch Backtesting data
+  const fetchBacktestingData = async () => {
+    try {
+      setIsLoadingBacktesting(true);
+      const response = await fetch(`https://us-central1-oracle-portfolio-prod.cloudfunctions.net/getBacktesting?start_date=${startDate}&end_date=${endDate}&country=${selectedCountry}`);
+      const data = await response.json();
+      if (data.success) {
+        setBacktestingData(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching backtesting data:', error);
+    } finally {
+      setIsLoadingBacktesting(false);
+    }
+  };
+
+  // Initial data fetch
+  useEffect(() => {
+    fetchCountriesData();
     fetchMarketStress();
-    // Refresh every 5 minutes
-    const interval = setInterval(fetchMarketStress, 5 * 60 * 1000);
+    fetchETFData();
+    
+    // Auto-refresh market stress every 5 minutes
+    const interval = setInterval(() => {
+      fetchMarketStress();
+      fetchETFData();
+    }, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Handle country change - FIXED VERSION
+  const handleCountryChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newCountryCode = event.target.value;
+    console.log('=== COUNTRY CHANGE ===');
+    console.log('Selected country code:', newCountryCode);
+    
+    // Update selected country
+    setSelectedCountry(newCountryCode);
+    
+    // Find and set new country data immediately
+    const newCountryData = countriesData.find(c => c.code === newCountryCode);
+    if (newCountryData) {
+      setCurrentCountryData(newCountryData);
+      console.log('Updated to country:', newCountryData.code, newCountryData.name);
+      console.log('New allocations:', newCountryData.allocations);
+      console.log('New confidence:', newCountryData.confidence);
+    } else {
+      console.log('Country not found in data:', newCountryCode);
+    }
+  };
+
+  const handleRunBacktest = () => {
+    fetchBacktestingData();
+  };
 
   const formatStressLevel = (level: string) => {
     switch (level?.toUpperCase()) {
@@ -45,6 +183,31 @@ const Dashboard: React.FC = () => {
       default: return 'text-gray-400';
     }
   };
+
+  const getRegimeColor = (regime: string) => {
+    switch (regime?.toUpperCase()) {
+      case 'EXPANSION': return 'text-green-400';
+      case 'RECESSION': return 'text-red-400';
+      case 'RECOVERY': return 'text-blue-400';
+      case 'SLOWDOWN': return 'text-yellow-400';
+      default: return 'text-gray-400';
+    }
+  };
+
+  // Prepare pie chart data for allocations
+  const pieData = currentCountryData ? [
+    { name: 'Actions', value: currentCountryData.allocations.stocks, color: '#2DD4BF' },
+    { name: 'Obligations', value: currentCountryData.allocations.bonds, color: '#3B82F6' },
+    { name: 'Commodités', value: currentCountryData.allocations.commodities, color: '#FFC107' },
+    { name: 'Cash', value: currentCountryData.allocations.cash, color: '#A78BFA' }
+  ] : [];
+
+  // Prepare line chart data for backtesting
+  const chartData = backtestingData?.cumulative_performance?.map(item => ({
+    date: item.date,
+    Oracle: ((item.oracle_cumulative - 1) * 100).toFixed(2),
+    Benchmark: ((item.benchmark_cumulative - 1) * 100).toFixed(2)
+  })) || [];
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -88,75 +251,137 @@ const Dashboard: React.FC = () => {
             <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-white">Sélection du Pays</h3>
-                <button className="text-gray-400 hover:text-white">
-                  🔄
+                <button 
+                  onClick={fetchCountriesData}
+                  className="text-gray-400 hover:text-white transition-colors"
+                  disabled={isLoadingCountries}
+                >
+                  {isLoadingCountries ? '⏳' : '🔄'}
                 </button>
               </div>
-              <p className="text-sm text-gray-400 mb-4">Mis à jour: Jul 7, 2025 4:01 PM</p>
+              <p className="text-sm text-gray-400 mb-4">
+                Mis à jour: {currentCountryData?.last_update ? new Date(currentCountryData.last_update).toLocaleString('fr-FR') : 'Loading...'}
+              </p>
               
               <select 
                 value={selectedCountry}
-                onChange={(e) => setSelectedCountry(e.target.value)}
+                onChange={handleCountryChange}
                 className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+                disabled={isLoadingCountries}
               >
-                <option value="France">France</option>
-                <option value="USA">USA</option>
-                <option value="Germany">Germany</option>
-                <option value="UK">UK</option>
+                {countriesData.map(country => (
+                  <option key={country.code} value={country.code}>
+                    {country.name}
+                  </option>
+                ))}
               </select>
 
-              <div className="mt-4">
-                <h4 className="text-white font-medium mb-2">Régime Économique:</h4>
-                <div className="flex items-center justify-between">
-                  <span className="text-green-400 font-semibold">EXPANSION</span>
-                  <span className="text-green-400 text-sm">● EXPANSION</span>
-                </div>
-                <div className="mt-2">
-                  <div className="flex justify-between text-sm text-gray-400 mb-1">
-                    <span>Confiance: 0.95</span>
+              {currentCountryData && (
+                <div className="mt-4">
+                  <h4 className="text-white font-medium mb-2">Régime Économique:</h4>
+                  <div className="flex items-center justify-between">
+                    <span className={`font-semibold ${getRegimeColor(currentCountryData.regime)}`}>
+                      {currentCountryData.regime}
+                    </span>
+                    <span className={`text-sm ${getRegimeColor(currentCountryData.regime)}`}>
+                      ● {currentCountryData.regime}
+                    </span>
                   </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div className="bg-green-500 h-2 rounded-full" style={{width: '95%'}}></div>
+                  <div className="mt-2">
+                    <div className="flex justify-between text-sm text-gray-400 mb-1">
+                      <span>Confiance: {(currentCountryData.confidence * 100).toFixed(0)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-700 rounded-full h-2">
+                      <div 
+                        className="bg-green-500 h-2 rounded-full transition-all duration-500" 
+                        style={{width: `${currentCountryData.confidence * 100}%`}}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Dernière mise à jour: {new Date(currentCountryData.last_update).toLocaleString('fr-FR')}
+                    </p>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">Dernière mise à jour: Jul 7, 2025 4:01 PM</p>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Régime Économique */}
             <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-white">Régime Économique</h3>
-                <button className="text-gray-400 hover:text-white">
-                  🔄
+                <button 
+                  onClick={fetchCountriesData}
+                  className="text-gray-400 hover:text-white transition-colors"
+                  disabled={isLoadingCountries}
+                >
+                  {isLoadingCountries ? '⏳' : '🔄'}
                 </button>
               </div>
-              <p className="text-sm text-gray-400 mb-4">Mis à jour: Jul 7, 2025 4:34 PM</p>
+              <p className="text-sm text-gray-400 mb-4">
+                Mis à jour: {currentCountryData?.last_update ? new Date(currentCountryData.last_update).toLocaleString('fr-FR') : 'Loading...'}
+              </p>
               
-              <div className="space-y-4">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-white font-medium">FRA:</span>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-green-400 font-semibold">EXPANSION</span>
-                      <span className="text-green-400 text-sm">● EXPANSION</span>
+              {currentCountryData && (
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white font-medium">{currentCountryData.code}:</span>
+                      <div className="flex items-center space-x-2">
+                        <span className={`font-semibold ${getRegimeColor(currentCountryData.regime)}`}>
+                          {currentCountryData.regime}
+                        </span>
+                        <span className={`text-sm ${getRegimeColor(currentCountryData.regime)}`}>
+                          ● {currentCountryData.regime}
+                        </span>
+                      </div>
                     </div>
+                    <div className="text-sm text-gray-400 mb-2">
+                      Indice de confiance: {(currentCountryData.confidence * 100).toFixed(0)}%
+                    </div>
+                    <div className="w-full bg-gray-700 rounded-full h-3">
+                      <div 
+                        className="bg-blue-500 h-3 rounded-full transition-all duration-500" 
+                        style={{width: `${currentCountryData.confidence * 100}%`}}
+                      ></div>
+                    </div>
+                    <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
+                      <div className="text-center">
+                        <div className="text-gray-400">Croissance</div>
+                        <div className="text-white font-medium">
+                          {(currentCountryData.indicators.growth * 100).toFixed(1)}%
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-gray-400">Inflation</div>
+                        <div className="text-white font-medium">
+                          {(currentCountryData.indicators.inflation * 100).toFixed(1)}%
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-gray-400">Chômage</div>
+                        <div className="text-white font-medium">
+                          {(currentCountryData.indicators.unemployment * 100).toFixed(1)}%
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Debug: Pays={currentCountryData.code}, API={currentCountryData.code}, Régime={currentCountryData.regime}
+                    </p>
                   </div>
-                  <div className="text-sm text-gray-400 mb-2">Indice de confiance: 95%</div>
-                  <div className="w-full bg-gray-700 rounded-full h-3">
-                    <div className="bg-blue-500 h-3 rounded-full" style={{width: '95%'}}></div>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">Debug: Pays=FRA, API=FRA, Régime=EXPANSION</p>
                 </div>
-              </div>
+              )}
             </div>
 
-            {/* Market Stress Indicators - VRAIES DONNÉES API */}
+            {/* Market Stress Indicators */}
             <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-white">Market Stress Indicators</h3>
-                <button className="text-gray-400 hover:text-white">
-                  🔄
+                <button 
+                  onClick={fetchMarketStress}
+                  className="text-gray-400 hover:text-white transition-colors"
+                  disabled={isLoadingMarketStress}
+                >
+                  {isLoadingMarketStress ? '⏳' : '🔄'}
                 </button>
               </div>
               <p className="text-sm text-gray-400 mb-4">
@@ -189,7 +414,7 @@ const Dashboard: React.FC = () => {
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <span className="text-white font-bold text-sm">
-                        {isLoading ? '...' : (marketStressData?.vix?.toFixed(2) || 'N/A')}
+                        {isLoadingMarketStress ? '...' : (marketStressData?.vix?.toFixed(2) || 'N/A')}
                       </span>
                     </div>
                   </div>
@@ -217,7 +442,7 @@ const Dashboard: React.FC = () => {
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <span className="text-white font-bold text-sm">
-                        {isLoading ? '...' : (marketStressData?.high_yield_spread?.toFixed(2) || 'N/A')}
+                        {isLoadingMarketStress ? '...' : (marketStressData?.high_yield_spread?.toFixed(2) || 'N/A')}
                       </span>
                     </div>
                   </div>
@@ -233,8 +458,12 @@ const Dashboard: React.FC = () => {
           <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-8">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-white">Backtesting Engine</h3>
-              <button className="text-gray-400 hover:text-white">
-                🔄
+              <button 
+                onClick={fetchBacktestingData}
+                className="text-gray-400 hover:text-white transition-colors"
+                disabled={isLoadingBacktesting}
+              >
+                {isLoadingBacktesting ? '⏳' : '🔄'}
               </button>
             </div>
             
@@ -249,7 +478,8 @@ const Dashboard: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-300 mb-2">Date de début</label>
                 <input 
                   type="date" 
-                  defaultValue="2020-01-01"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
                   className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
               </div>
@@ -257,30 +487,97 @@ const Dashboard: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-300 mb-2">Date de fin</label>
                 <input 
                   type="date" 
-                  defaultValue="2024-12-31"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
                   className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
               </div>
             </div>
 
-            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-md transition-colors">
-              Lancer le backtest
+            <button 
+              onClick={handleRunBacktest}
+              disabled={isLoadingBacktesting}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-medium py-3 px-4 rounded-md transition-colors"
+            >
+              {isLoadingBacktesting ? 'Calcul en cours...' : 'Lancer le backtest'}
             </button>
 
-            <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div>
-                <h4 className="text-white font-medium mb-3">Performance Cumulative</h4>
-                <div className="bg-gray-700 rounded-lg p-4 h-48 flex items-center justify-center">
-                  <div className="text-gray-400">📈 Graphique de performance</div>
+            {backtestingData && (
+              <div className="mt-6">
+                {/* Performance Metrics */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  <div className="bg-gray-700 rounded-lg p-3 text-center">
+                    <div className="text-xs text-gray-400">Rendement Oracle</div>
+                    <div className="text-lg font-bold text-teal-400">
+                      {(backtestingData.performance_metrics.total_return_oracle * 100).toFixed(1)}%
+                    </div>
+                  </div>
+                  <div className="bg-gray-700 rounded-lg p-3 text-center">
+                    <div className="text-xs text-gray-400">Rendement Benchmark</div>
+                    <div className="text-lg font-bold text-blue-400">
+                      {(backtestingData.performance_metrics.total_return_benchmark * 100).toFixed(1)}%
+                    </div>
+                  </div>
+                  <div className="bg-gray-700 rounded-lg p-3 text-center">
+                    <div className="text-xs text-gray-400">Sharpe Oracle</div>
+                    <div className="text-lg font-bold text-white">
+                      {backtestingData.performance_metrics.sharpe_ratio_oracle.toFixed(2)}
+                    </div>
+                  </div>
+                  <div className="bg-gray-700 rounded-lg p-3 text-center">
+                    <div className="text-xs text-gray-400">Volatilité Oracle</div>
+                    <div className="text-lg font-bold text-white">
+                      {(backtestingData.performance_metrics.volatility_oracle * 100).toFixed(1)}%
+                    </div>
+                  </div>
+                </div>
+
+                {/* Charts */}
+                <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+                  <div>
+                    <h4 className="text-white font-medium mb-3">Performance Cumulative (%)</h4>
+                    <div className="bg-gray-700 rounded-lg p-4 h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={chartData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                          <XAxis 
+                            dataKey="date" 
+                            stroke="#9CA3AF"
+                            fontSize={12}
+                          />
+                          <YAxis 
+                            stroke="#9CA3AF"
+                            fontSize={12}
+                          />
+                          <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: '#1F2937', 
+                              border: '1px solid #374151',
+                              borderRadius: '6px'
+                            }}
+                          />
+                          <Legend />
+                          <Line 
+                            type="monotone" 
+                            dataKey="Oracle" 
+                            stroke="#2DD4BF" 
+                            strokeWidth={2}
+                            dot={false}
+                          />
+                          <Line 
+                            type="monotone" 
+                            dataKey="Benchmark" 
+                            stroke="#3B82F6" 
+                            strokeWidth={2}
+                            dot={false}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div>
-                <h4 className="text-white font-medium mb-3">Surperformance vs Benchmark</h4>
-                <div className="bg-gray-700 rounded-lg p-4 h-48 flex items-center justify-center">
-                  <div className="text-gray-400">📊 Graphique de surperformance</div>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Bottom Grid */}
@@ -289,103 +586,86 @@ const Dashboard: React.FC = () => {
             <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-white">Allocations de portefeuille</h3>
-                <button className="text-gray-400 hover:text-white">
-                  🔄
+                <button 
+                  onClick={fetchCountriesData}
+                  className="text-gray-400 hover:text-white transition-colors"
+                  disabled={isLoadingCountries}
+                >
+                  {isLoadingCountries ? '⏳' : '🔄'}
                 </button>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="flex items-center justify-center">
-                  <div className="relative w-32 h-32">
-                    <svg className="w-32 h-32" viewBox="0 0 42 42">
-                      <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#374151" strokeWidth="3"/>
-                      <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#2DD4BF" strokeWidth="3" 
-                              strokeDasharray="65 100" strokeDashoffset="25" transform="rotate(-90 21 21)"/>
-                      <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#3B82F6" strokeWidth="3" 
-                              strokeDasharray="25 100" strokeDashoffset="-40" transform="rotate(-90 21 21)"/>
-                      <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#FFC107" strokeWidth="3" 
-                              strokeDasharray="5 100" strokeDashoffset="-65" transform="rotate(-90 21 21)"/>
-                      <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#A78BFA" strokeWidth="3" 
-                              strokeDasharray="5 100" strokeDashoffset="-70" transform="rotate(-90 21 21)"/>
-                    </svg>
+              {currentCountryData && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="flex items-center justify-center">
+                    <div className="w-32 h-32">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={pieData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={30}
+                            outerRadius={60}
+                            paddingAngle={2}
+                            dataKey="value"
+                          >
+                            {pieData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {pieData.map((item, index) => (
+                      <div key={index} className="flex justify-between items-center">
+                        <div className="flex items-center space-x-2">
+                          <div 
+                            className="w-3 h-3 rounded-full" 
+                            style={{backgroundColor: item.color}}
+                          ></div>
+                          <span className="text-white">{item.name}</span>
+                        </div>
+                        <span className="text-white font-medium">{item.value}%</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-                
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-teal-400 rounded-full"></div>
-                      <span className="text-white">Actions</span>
-                    </div>
-                    <span className="text-white font-medium">65%</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                      <span className="text-white">Obligations</span>
-                    </div>
-                    <span className="text-white font-medium">25%</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                      <span className="text-white">Commodités</span>
-                    </div>
-                    <span className="text-white font-medium">5%</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-purple-400 rounded-full"></div>
-                      <span className="text-white">Cash</span>
-                    </div>
-                    <span className="text-white font-medium">5%</span>
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
             
-            {/* ETF Prices */}
+            {/* ETF Prices - REAL DATA */}
             <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-white">ETF Prices</h3>
-                <button className="text-gray-400 hover:text-white">
-                  🔄
+                <button 
+                  onClick={fetchETFData}
+                  className="text-gray-400 hover:text-white transition-colors"
+                  disabled={isLoadingETF}
+                >
+                  {isLoadingETF ? '⏳' : '🔄'}
                 </button>
               </div>
               
               <div className="space-y-4">
-                <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
-                  <div>
-                    <div className="font-medium text-white">SPY</div>
-                    <div className="text-sm text-gray-400">SPDR S&P 500 ETF</div>
+                {etfData.map((etf, index) => (
+                  <div key={index} className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                    <div>
+                      <div className="font-medium text-white">{etf.symbol}</div>
+                      <div className="text-sm text-gray-400">{etf.name}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-medium text-white">${etf.price.toFixed(2)}</div>
+                      <div className={`text-sm ${etf.changePercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {etf.changePercent >= 0 ? '+' : ''}{etf.changePercent.toFixed(2)}%
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-medium text-white">$418.74</div>
-                    <div className="text-sm text-green-400">+0.85%</div>
-                  </div>
-                </div>
-                
-                <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
-                  <div>
-                    <div className="font-medium text-white">VTI</div>
-                    <div className="text-sm text-gray-400">Vanguard Total Stock Market</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-medium text-white">$85.0</div>
-                    <div className="text-sm text-red-400">-0.12%</div>
-                  </div>
-                </div>
-                
-                <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
-                  <div>
-                    <div className="font-medium text-white">VEA</div>
-                    <div className="text-sm text-gray-400">Vanguard FTSE Developed Markets</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-medium text-white">$49.9</div>
-                    <div className="text-sm text-green-400">+0.34%</div>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>

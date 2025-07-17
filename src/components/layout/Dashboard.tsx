@@ -488,7 +488,15 @@ const Dashboard: React.FC = () => {
   // 🔧 MÉTRIQUES ROBUSTES: Calculate performance metrics avec vérifications
   const performanceMetrics = React.useMemo(() => {
     try {
+      console.log('🔍 METRICS DEBUG - START');
+      console.log('🔍 backtestingData keys:', Object.keys(backtestingData || {}));
+      console.log('🔍 backtestingData.metrics:', backtestingData?.metrics);
+      console.log('🔍 backtestingData.benchmark_metrics:', backtestingData?.benchmark_metrics);
+      console.log('🔍 backtestingData.outperformance:', backtestingData?.outperformance);
+      console.log('🔍 backtestingData structure:', backtestingData);
+      
       if (!backtestingData?.metrics || !backtestingData?.benchmark_metrics) {
+        console.log('🔍 METRICS: Missing metrics data, returning defaults');
         return {
           oracleReturn: '0.0',
           benchmarkReturn: '0.0',
@@ -502,9 +510,10 @@ const Dashboard: React.FC = () => {
       const outperformance = (backtestingData.outperformance.total_return * 100).toFixed(1);
       const totalMonths = backtestingData.data_quality?.total_months || backtestingData.period?.total_months || 0;
       
+      console.log('🔍 METRICS: Calculated values:', { oracleReturn, benchmarkReturn, outperformance, totalMonths });
       return { oracleReturn, benchmarkReturn, outperformance, totalMonths };
     } catch (error) {
-      console.error('Error calculating performance metrics:', error);
+      console.error('🔍 Error calculating performance metrics:', error);
       return {
         oracleReturn: '0.0',
         benchmarkReturn: '0.0',

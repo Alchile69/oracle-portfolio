@@ -613,6 +613,7 @@ const Dashboard: React.FC = () => {
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <h1 className="text-xl font-bold text-teal-400">🔮 Oracle Portfolio</h1>
+                <div className="text-xs text-gray-500">v2.1.0 - Métriques corrigées</div>
               </div>
             </div>
             <nav className="hidden md:block">

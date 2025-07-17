@@ -192,70 +192,117 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // 🔧 FONCTION ULTRA-ROBUSTE: Fetch Backtesting data pour production
+  // 🛡️ FONCTION HYPER-DÉFENSIVE: Backtesting incassable pour production
   const fetchBacktestingData = async () => {
     try {
+      console.log(`Launching backtest for country: ${selectedCountry} from ${startDate} to ${endDate}`);
       setIsLoadingBacktesting(true);
       setBacktestingError(null);
       
+      // 🛡️ DÉFENSE 1: Validation des paramètres
+      if (!selectedCountry || !startDate || !endDate) {
+        throw new Error('Missing required parameters');
+      }
+
       const url = `https://us-central1-oracle-portfolio-prod.cloudfunctions.net/getBacktesting?start_date=${startDate}&end_date=${endDate}&country=${selectedCountry}`;
       console.log('🚀 BACKTESTING: Fetching data from:', url);
-      
-      // Timeout pour éviter les blocages
+
+      // 🛡️ DÉFENSE 2: Timeout et headers robustes
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 secondes
-      
-      const response = await fetch(url, { 
-        signal: controller.signal,
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+      const response = await fetch(url, {
+        method: 'GET',
         headers: {
           'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal
       });
-      
+
       clearTimeout(timeoutId);
+
+      // 🛡️ DÉFENSE 3: Validation de la réponse HTTP
+      if (!response) {
+        throw new Error('No response received');
+      }
       
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      console.log('🔍 BACKTESTING: API response structure:', {
-        success: data.success,
-        hasData: !!data.data,
-        hasPerformanceData: !!(data.data && data.data.performance_data),
-        hasCumulative: !!(data.data && data.data.performance_data && data.data.performance_data.cumulative_performance)
+      
+      // 🛡️ DÉFENSE 4: Validation structure de base
+      if (!data) {
+        throw new Error('No data received');
+      }
+
+      console.log('🔍 BACKTESTING: Raw API response:', data);
+
+      // 🛡️ DÉFENSE 5: Validation structure complète avec la vraie structure API
+      const hasSuccess = data && typeof data.success === 'boolean' && data.success === true;
+      const hasDataWrapper = hasSuccess && data.data && typeof data.data === 'object';
+      const hasPerformanceData = hasDataWrapper && data.data.performance_data && typeof data.data.performance_data === 'object';
+      const hasCumulative = hasPerformanceData && 
+                           data.data.performance_data.cumulative_performance && 
+                           Array.isArray(data.data.performance_data.cumulative_performance);
+      const hasValidLength = hasCumulative && data.data.performance_data.cumulative_performance.length > 0;
+
+      console.log('🔍 BACKTESTING: Validation results:', {
+        hasSuccess,
+        hasDataWrapper,
+        hasPerformanceData,
+        hasCumulative,
+        hasValidLength,
+        dataLength: hasCumulative ? data.data.performance_data.cumulative_performance.length : 0
       });
-      
-      if (data.success && data.data) {
-        // Vérification ultra-robuste de la structure
-        const performanceData = data.data.performance_data;
-        if (performanceData && performanceData.cumulative_performance && Array.isArray(performanceData.cumulative_performance)) {
-          console.log('✅ BACKTESTING: Data structure valid, points:', performanceData.cumulative_performance.length);
-          setBacktestingData(data.data);
-          setBacktestingError(null);
-        } else {
-          console.error('❌ BACKTESTING: Invalid data structure:', performanceData);
-          throw new Error('Structure de données invalide: performance_data.cumulative_performance manquant ou incorrect');
-        }
-      } else {
-        throw new Error('Réponse API invalide: success=false ou data manquant');
+
+      // 🛡️ DÉFENSE 6: Validation finale avec message d'erreur détaillé
+      if (!hasValidLength) {
+        const errorDetails = [];
+        if (!hasSuccess) errorDetails.push('invalid success flag');
+        if (!hasDataWrapper) errorDetails.push('missing data wrapper');
+        if (!hasPerformanceData) errorDetails.push('missing performance_data');
+        if (!hasCumulative) errorDetails.push('missing cumulative_performance array');
+        if (!hasValidLength) errorDetails.push('empty data array');
+        
+        throw new Error(`Invalid backtesting data: ${errorDetails.join(', ')}`);
       }
+
+      console.log('✅ BACKTESTING: Data structure valid, points:', data.data.performance_data.cumulative_performance.length);
+      setBacktestingData(data.data);
+      setBacktestingError(null);
+
     } catch (error: any) {
-      console.error('💥 BACKTESTING ERROR:', error);
+      console.error('❌ BACKTESTING ERROR:', error);
       
-      // Gestion d'erreurs spécifique
-      if (error.name === 'AbortError') {
-        setBacktestingError('Timeout: La requête a pris trop de temps');
-      } else if (error.message.includes('HTTP')) {
-        setBacktestingError(`Erreur serveur: ${error.message}`);
-      } else if (error.message.includes('Structure')) {
-        setBacktestingError(`Erreur de données: ${error.message}`);
-      } else {
-        setBacktestingError(`Erreur inconnue: ${error.message}`);
+      // 🛡️ DÉFENSE 7: Gestion d'erreurs hyper-robuste
+      let errorMessage = 'Unknown error occurred';
+      
+      if (error && typeof error === 'object') {
+        if (error.name === 'AbortError') {
+          errorMessage = 'Request timeout (30s) - API too slow';
+        } else if (error.message && error.message.includes('fetch')) {
+          errorMessage = 'Network error - Check internet connection';
+        } else if (error.message && error.message.includes('HTTP error')) {
+          errorMessage = `Server error - ${error.message}`;
+        } else if (error.message && error.message.includes('Invalid backtesting data')) {
+          errorMessage = `Data validation failed - ${error.message}`;
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
       }
       
-      setBacktestingData(null);
+      setBacktestingError(errorMessage);
+      
+      // 🛡️ DÉFENSE 8: Fallback data pour éviter tout crash
+      setBacktestingData({
+        performance_data: {
+          monthly_returns: [],
+          cumulative_performance: []
+        }
+      });
     } finally {
       setIsLoadingBacktesting(false);
     }

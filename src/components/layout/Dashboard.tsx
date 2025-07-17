@@ -388,27 +388,98 @@ const Dashboard: React.FC = () => {
     { name: 'Cash', value: currentCountryData.allocations.cash || 0, color: '#A78BFA' }
   ] : [];
 
-  // 🔧 DONNÉES ROBUSTES: Prepare line chart data avec gestion d'erreurs
+  // 🔍 DIAGNOSTIC PRODUCTION: Logs détaillés pour identifier le problème
   const chartData = React.useMemo(() => {
+    console.log('🔍 CHART DATA DEBUG - START');
+    console.log('🔍 backtestingData:', backtestingData);
+    console.log('🔍 backtestingData type:', typeof backtestingData);
+    console.log('🔍 backtestingData keys:', backtestingData ? Object.keys(backtestingData) : 'null/undefined');
+    
+    if (backtestingData) {
+      console.log('🔍 performance_data:', backtestingData.performance_data);
+      console.log('🔍 performance_data type:', typeof backtestingData.performance_data);
+      console.log('🔍 performance_data keys:', backtestingData.performance_data ? Object.keys(backtestingData.performance_data) : 'null/undefined');
+      
+      if (backtestingData.performance_data) {
+        console.log('🔍 cumulative_performance:', backtestingData.performance_data.cumulative_performance);
+        console.log('🔍 cumulative_performance type:', typeof backtestingData.performance_data.cumulative_performance);
+        console.log('🔍 cumulative_performance isArray:', Array.isArray(backtestingData.performance_data.cumulative_performance));
+        console.log('🔍 cumulative_performance length:', backtestingData.performance_data.cumulative_performance?.length);
+        
+        if (Array.isArray(backtestingData.performance_data.cumulative_performance)) {
+          console.log('🔍 First 3 items:', backtestingData.performance_data.cumulative_performance.slice(0, 3));
+        }
+      }
+    }
+    
     try {
-      if (!backtestingData?.performance_data?.cumulative_performance || !Array.isArray(backtestingData.performance_data.cumulative_performance)) {
+      // 🛡️ DÉFENSE NIVEAU 1: Vérification de base
+      if (!backtestingData) {
+        console.log('🔍 CHART DATA: backtestingData is null/undefined');
         return [];
       }
       
-      return backtestingData.performance_data.cumulative_performance.map((item, index) => {
-        if (!item || typeof item.oracle_cumulative !== 'number' || typeof item.benchmark_cumulative !== 'number') {
-          console.warn('Invalid data point at index', index, item);
+      // 🛡️ DÉFENSE NIVEAU 2: Vérification performance_data
+      if (!backtestingData.performance_data) {
+        console.log('🔍 CHART DATA: performance_data is null/undefined');
+        return [];
+      }
+      
+      // 🛡️ DÉFENSE NIVEAU 3: Vérification cumulative_performance
+      if (!backtestingData.performance_data.cumulative_performance) {
+        console.log('🔍 CHART DATA: cumulative_performance is null/undefined');
+        return [];
+      }
+      
+      // 🛡️ DÉFENSE NIVEAU 4: Vérification Array
+      if (!Array.isArray(backtestingData.performance_data.cumulative_performance)) {
+        console.log('🔍 CHART DATA: cumulative_performance is not an array, type:', typeof backtestingData.performance_data.cumulative_performance);
+        return [];
+      }
+      
+      // 🛡️ DÉFENSE NIVEAU 5: Vérification length
+      if (backtestingData.performance_data.cumulative_performance.length === 0) {
+        console.log('🔍 CHART DATA: cumulative_performance array is empty');
+        return [];
+      }
+      
+      console.log('🔍 CHART DATA: All validations passed, processing', backtestingData.performance_data.cumulative_performance.length, 'items');
+      
+      const processedData = backtestingData.performance_data.cumulative_performance.map((item, index) => {
+        if (!item) {
+          console.warn('🔍 CHART DATA: Null item at index', index);
           return null;
         }
         
-        return {
+        if (typeof item.oracle_cumulative !== 'number' || typeof item.benchmark_cumulative !== 'number') {
+          console.warn('🔍 CHART DATA: Invalid data types at index', index, {
+            oracle_cumulative: typeof item.oracle_cumulative,
+            benchmark_cumulative: typeof item.benchmark_cumulative,
+            item
+          });
+          return null;
+        }
+        
+        const processedItem = {
           date: item.date || `Point ${index + 1}`,
           Oracle: Number(((item.oracle_cumulative - 1) * 100).toFixed(2)),
           Benchmark: Number(((item.benchmark_cumulative - 1) * 100).toFixed(2))
         };
+        
+        if (index < 3) {
+          console.log('🔍 CHART DATA: Processed item', index, processedItem);
+        }
+        
+        return processedItem;
       }).filter(Boolean); // Remove null values
+      
+      console.log('🔍 CHART DATA: Final processed data length:', processedData.length);
+      console.log('🔍 CHART DATA DEBUG - END');
+      
+      return processedData;
     } catch (error) {
-      console.error('Error preparing chart data:', error);
+      console.error('🔍 CHART DATA ERROR:', error);
+      console.error('🔍 Error stack:', error.stack);
       return [];
     }
   }, [backtestingData]);
@@ -777,55 +848,120 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Chart */}
+                {/* Chart - SÉCURISÉ AVEC VÉRIFICATIONS DÉFENSIVES */}
                 <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
                   <div>
                     <h4 className="text-white font-medium mb-3">Performance Cumulative (%)</h4>
                     <div className="bg-gray-700 rounded-lg p-4 h-64">
-                      {chartData.length > 0 ? (
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={chartData}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                            <XAxis 
-                              dataKey="date" 
-                              stroke="#9CA3AF"
-                              fontSize={12}
-                              interval="preserveStartEnd"
-                            />
-                            <YAxis 
-                              stroke="#9CA3AF"
-                              fontSize={12}
-                            />
-                            <Tooltip 
-                              contentStyle={{ 
-                                backgroundColor: '#374151', 
-                                border: 'none', 
-                                borderRadius: '8px',
-                                color: '#fff'
-                              }}
-                            />
-                            <Legend />
-                            <Line 
-                              type="monotone" 
-                              dataKey="Oracle" 
-                              stroke="#2DD4BF" 
-                              strokeWidth={2}
-                              dot={false}
-                            />
-                            <Line 
-                              type="monotone" 
-                              dataKey="Benchmark" 
-                              stroke="#3B82F6" 
-                              strokeWidth={2}
-                              dot={false}
-                            />
-                          </LineChart>
-                        </ResponsiveContainer>
-                      ) : (
-                        <div className="flex items-center justify-center h-full text-gray-400">
-                          Aucune donnée de graphique disponible
-                        </div>
-                      )}
+                      {(() => {
+                        // 🛡️ VÉRIFICATIONS DÉFENSIVES ULTRA-ROBUSTES
+                        console.log('🛡️ RENDER GUARD: Checking chartData for rendering');
+                        console.log('🛡️ chartData:', chartData);
+                        console.log('🛡️ chartData type:', typeof chartData);
+                        console.log('🛡️ chartData isArray:', Array.isArray(chartData));
+                        console.log('🛡️ chartData length:', chartData?.length);
+                        
+                        // Vérification 1: chartData existe et est un array
+                        if (!chartData || !Array.isArray(chartData)) {
+                          console.log('🛡️ RENDER GUARD: chartData is not a valid array');
+                          return (
+                            <div className="flex items-center justify-center h-full text-gray-400">
+                              Données de graphique invalides (pas un tableau)
+                            </div>
+                          );
+                        }
+                        
+                        // Vérification 2: chartData a une longueur valide
+                        if (chartData.length === 0) {
+                          console.log('🛡️ RENDER GUARD: chartData is empty');
+                          return (
+                            <div className="flex items-center justify-center h-full text-gray-400">
+                              Aucune donnée de graphique disponible
+                            </div>
+                          );
+                        }
+                        
+                        // Vérification 3: Vérifier que les données ont la structure attendue
+                        const hasValidStructure = chartData.every((item, index) => {
+                          if (!item || typeof item !== 'object') {
+                            console.warn('🛡️ RENDER GUARD: Invalid item at index', index, item);
+                            return false;
+                          }
+                          
+                          if (typeof item.Oracle !== 'number' || typeof item.Benchmark !== 'number') {
+                            console.warn('🛡️ RENDER GUARD: Invalid data types at index', index, {
+                              Oracle: typeof item.Oracle,
+                              Benchmark: typeof item.Benchmark,
+                              item
+                            });
+                            return false;
+                          }
+                          
+                          return true;
+                        });
+                        
+                        if (!hasValidStructure) {
+                          console.log('🛡️ RENDER GUARD: chartData has invalid structure');
+                          return (
+                            <div className="flex items-center justify-center h-full text-gray-400">
+                              Structure de données invalide
+                            </div>
+                          );
+                        }
+                        
+                        console.log('🛡️ RENDER GUARD: All checks passed, rendering chart with', chartData.length, 'data points');
+                        
+                        // Rendu sécurisé du graphique
+                        try {
+                          return (
+                            <ResponsiveContainer width="100%" height="100%">
+                              <LineChart data={chartData}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                                <XAxis 
+                                  dataKey="date" 
+                                  stroke="#9CA3AF"
+                                  fontSize={12}
+                                  interval="preserveStartEnd"
+                                />
+                                <YAxis 
+                                  stroke="#9CA3AF"
+                                  fontSize={12}
+                                />
+                                <Tooltip 
+                                  contentStyle={{ 
+                                    backgroundColor: '#374151', 
+                                    border: 'none', 
+                                    borderRadius: '8px',
+                                    color: '#fff'
+                                  }}
+                                />
+                                <Legend />
+                                <Line 
+                                  type="monotone" 
+                                  dataKey="Oracle" 
+                                  stroke="#2DD4BF" 
+                                  strokeWidth={2}
+                                  dot={false}
+                                />
+                                <Line 
+                                  type="monotone" 
+                                  dataKey="Benchmark" 
+                                  stroke="#3B82F6" 
+                                  strokeWidth={2}
+                                  dot={false}
+                                />
+                              </LineChart>
+                            </ResponsiveContainer>
+                          );
+                        } catch (renderError) {
+                          console.error('🛡️ RENDER ERROR:', renderError);
+                          return (
+                            <div className="flex items-center justify-center h-full text-red-400">
+                              Erreur de rendu du graphique: {renderError.message}
+                            </div>
+                          );
+                        }
+                      })()}
                     </div>
                   </div>
                 </div>

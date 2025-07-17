@@ -192,38 +192,69 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // 🔧 FONCTION ROBUSTE: Fetch Backtesting data avec gestion d'erreurs complète
+  // 🔧 FONCTION ULTRA-ROBUSTE: Fetch Backtesting data pour production
   const fetchBacktestingData = async () => {
     try {
       setIsLoadingBacktesting(true);
       setBacktestingError(null);
       
       const url = `https://us-central1-oracle-portfolio-prod.cloudfunctions.net/getBacktesting?start_date=${startDate}&end_date=${endDate}&country=${selectedCountry}`;
-      console.log('Fetching backtesting data from:', url);
+      console.log('🚀 BACKTESTING: Fetching data from:', url);
       
-      const response = await fetch(url);
+      // Timeout pour éviter les blocages
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 secondes
+      
+      const response = await fetch(url, { 
+        signal: controller.signal,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
       const data = await response.json();
-      console.log('Backtesting API response:', data);
+      console.log('🔍 BACKTESTING: API response structure:', {
+        success: data.success,
+        hasData: !!data.data,
+        hasPerformanceData: !!(data.data && data.data.performance_data),
+        hasCumulative: !!(data.data && data.data.performance_data && data.data.performance_data.cumulative_performance)
+      });
       
       if (data.success && data.data) {
-        // Vérifier la structure des données
-        if (data.data.performance_data && data.data.performance_data.cumulative_performance && Array.isArray(data.data.performance_data.cumulative_performance)) {
+        // Vérification ultra-robuste de la structure
+        const performanceData = data.data.performance_data;
+        if (performanceData && performanceData.cumulative_performance && Array.isArray(performanceData.cumulative_performance)) {
+          console.log('✅ BACKTESTING: Data structure valid, points:', performanceData.cumulative_performance.length);
           setBacktestingData(data.data);
-          console.log('Backtesting data loaded successfully:', data.data.performance_data.cumulative_performance.length, 'data points');
+          setBacktestingError(null);
         } else {
-          throw new Error('Invalid backtesting data structure: missing performance_data.cumulative_performance');
+          console.error('❌ BACKTESTING: Invalid data structure:', performanceData);
+          throw new Error('Structure de données invalide: performance_data.cumulative_performance manquant ou incorrect');
         }
       } else {
-        throw new Error('API returned unsuccessful response');
+        throw new Error('Réponse API invalide: success=false ou data manquant');
       }
-    } catch (error) {
-      console.error('Error fetching backtesting data:', error);
-      setBacktestingError(error instanceof Error ? error.message : 'Unknown error');
+    } catch (error: any) {
+      console.error('💥 BACKTESTING ERROR:', error);
+      
+      // Gestion d'erreurs spécifique
+      if (error.name === 'AbortError') {
+        setBacktestingError('Timeout: La requête a pris trop de temps');
+      } else if (error.message.includes('HTTP')) {
+        setBacktestingError(`Erreur serveur: ${error.message}`);
+      } else if (error.message.includes('Structure')) {
+        setBacktestingError(`Erreur de données: ${error.message}`);
+      } else {
+        setBacktestingError(`Erreur inconnue: ${error.message}`);
+      }
+      
       setBacktestingData(null);
     } finally {
       setIsLoadingBacktesting(false);
@@ -252,11 +283,23 @@ const Dashboard: React.FC = () => {
     }
   }, [selectedCountry, countriesData]);
 
-  // Handle country selection change
+  // Handle country selection change - VERSION ROBUSTE
   const handleCountryChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newCountry = event.target.value;
-    console.log('Selecting country:', newCountry);
+    console.log('=== COUNTRY CHANGE ===');
+    console.log('Selected country code:', newCountry);
     setSelectedCountry(newCountry);
+    
+    // Force update of country data
+    if (countriesData.length > 0) {
+      const countryData = countriesData.find(c => c.code === newCountry);
+      if (countryData) {
+        setCurrentCountryData(countryData);
+        console.log('Updated to country:', countryData.code, countryData.name);
+        console.log('New allocations:', countryData.allocations);
+        console.log('New confidence:', countryData.confidence);
+      }
+    }
   };
 
   // Handle backtesting launch
@@ -411,6 +454,7 @@ const Dashboard: React.FC = () => {
               <select 
                 value={selectedCountry}
                 onChange={handleCountryChange}
+                onInput={handleCountryChange}
                 className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
                 {countriesData.map((country) => (

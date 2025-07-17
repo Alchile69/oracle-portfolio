@@ -233,6 +233,30 @@ const Dashboard: React.FC = () => {
 
       const data = await response.json();
       
+      // 🔍 DIAGNOSTIC COMPLET: Log de la réponse API brute
+      console.log('🔍 API RESPONSE - DIAGNOSTIC COMPLET:');
+      console.log('🔍 Raw response data:', JSON.stringify(data, null, 2));
+      console.log('🔍 Data keys:', Object.keys(data || {}));
+      console.log('🔍 Data.data keys:', data?.data ? Object.keys(data.data) : 'No data.data');
+      
+      // 🔍 DIAGNOSTIC MÉTRIQUES: Vérifier la structure des métriques
+      if (data?.data) {
+        console.log('🔍 METRICS STRUCTURE:');
+        console.log('🔍 data.data.metrics:', data.data.metrics);
+        console.log('🔍 data.data.benchmark_metrics:', data.data.benchmark_metrics);
+        console.log('🔍 data.data.outperformance:', data.data.outperformance);
+        
+        if (data.data.metrics) {
+          console.log('🔍 metrics.total_return:', data.data.metrics.total_return, typeof data.data.metrics.total_return);
+        }
+        if (data.data.benchmark_metrics) {
+          console.log('🔍 benchmark_metrics.total_return:', data.data.benchmark_metrics.total_return, typeof data.data.benchmark_metrics.total_return);
+        }
+        if (data.data.outperformance) {
+          console.log('🔍 outperformance.total_return:', data.data.outperformance.total_return, typeof data.data.outperformance.total_return);
+        }
+      }
+      
       // 🛡️ DÉFENSE 4: Validation structure de base
       if (!data) {
         throw new Error('No data received');
@@ -485,18 +509,19 @@ const Dashboard: React.FC = () => {
     }
   }, [backtestingData]);
 
-  // 🛡️ HELPER: Fonction pour sécuriser les calculs numériques
+  // 🛡️ HELPER: Fonction pour sécuriser les calculs numériques (valeurs déjà en %)
   const safeNumberToPercentage = (value: any, fallback: string = 'N/A'): string => {
     // Vérifier si la valeur est un nombre valide
     if (typeof value === 'number' && !isNaN(value) && isFinite(value)) {
-      return (value * 100).toFixed(1);
+      // Les valeurs de l'API sont déjà en pourcentage, pas besoin de multiplier par 100
+      return value.toFixed(1);
     }
     
     // Essayer de convertir en nombre si c'est une string
     if (typeof value === 'string') {
       const parsed = parseFloat(value);
       if (!isNaN(parsed) && isFinite(parsed)) {
-        return (parsed * 100).toFixed(1);
+        return parsed.toFixed(1);
       }
     }
     
@@ -532,10 +557,17 @@ const Dashboard: React.FC = () => {
       
       console.log('🔍 METRICS: Structure validation:', { hasMetrics, hasBenchmarkMetrics, hasOutperformance });
       
-      // 🛡️ DÉFENSE 3: Extraire les valeurs avec vérifications
-      const oracleReturnRaw = hasMetrics ? backtestingData.metrics.total_return : undefined;
-      const benchmarkReturnRaw = hasBenchmarkMetrics ? backtestingData.benchmark_metrics.total_return : undefined;
-      const outperformanceRaw = hasOutperformance ? backtestingData.outperformance.total_return : undefined;
+      // 🛡️ DÉFENSE 3: Extraire les valeurs avec vérifications ET MAPPING CORRECT
+      const oracleReturnRaw = hasMetrics ? backtestingData.metrics.totalReturn : undefined;
+      const benchmarkReturnRaw = hasBenchmarkMetrics ? backtestingData.benchmark_metrics.totalReturn : undefined;
+      
+      // 🔧 CALCUL OUTPERFORMANCE: Calculer la surperformance manuellement
+      let outperformanceRaw = undefined;
+      if (typeof oracleReturnRaw === 'number' && typeof benchmarkReturnRaw === 'number') {
+        outperformanceRaw = oracleReturnRaw - benchmarkReturnRaw;
+      } else if (hasOutperformance && typeof backtestingData.outperformance === 'number') {
+        outperformanceRaw = backtestingData.outperformance;
+      }
       
       console.log('🔍 METRICS: Raw values:', { 
         oracleReturnRaw, 

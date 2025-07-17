@@ -101,6 +101,20 @@ const Dashboard: React.FC = () => {
       }
       
       const data = await response.json();
+      
+      // 🔍 DIAGNOSTIC: Log des données économiques reçues
+      console.log('🔍 ECONOMIC DATA DEBUG - START');
+      console.log('🔍 Raw API response:', data);
+      if (data.success && Array.isArray(data.countries) && data.countries.length > 0) {
+        const firstCountry = data.countries[0];
+        console.log('🔍 First country data:', firstCountry);
+        console.log('🔍 Confidence value:', firstCountry.confidence, 'type:', typeof firstCountry.confidence);
+        console.log('🔍 Growth value:', firstCountry.indicators?.growth, 'type:', typeof firstCountry.indicators?.growth);
+        console.log('🔍 Inflation value:', firstCountry.indicators?.inflation, 'type:', typeof firstCountry.indicators?.inflation);
+        console.log('🔍 Unemployment value:', firstCountry.indicators?.unemployment, 'type:', typeof firstCountry.indicators?.unemployment);
+      }
+      console.log('🔍 ECONOMIC DATA DEBUG - END');
+      
       if (data.success && Array.isArray(data.countries)) {
         setCountriesData(data.countries);
         // Set initial country data
@@ -509,6 +523,24 @@ const Dashboard: React.FC = () => {
     }
   }, [backtestingData]);
 
+  // 🛡️ HELPER: Fonction pour formater les pourcentages économiques (valeurs en décimales)
+  const formatEconomicPercentage = (value: number): string => {
+    if (typeof value !== 'number' || isNaN(value) || !isFinite(value)) {
+      return 'N/A';
+    }
+    // Les valeurs de l'API sont en décimales (0.025 = 2.5%), multiplier par 100
+    return (value * 100).toFixed(1);
+  };
+
+  // 🛡️ HELPER: Fonction pour formater l'indice de confiance (valeur en décimale)
+  const formatConfidenceIndex = (value: number): string => {
+    if (typeof value !== 'number' || isNaN(value) || !isFinite(value)) {
+      return 'N/A';
+    }
+    // L'indice de confiance est en décimale (0.95 = 95%), multiplier par 100
+    return (value * 100).toFixed(0);
+  };
+
   // 🛡️ HELPER: Fonction pour sécuriser les calculs numériques (valeurs déjà en %)
   const safeNumberToPercentage = (value: any, fallback: string = 'N/A'): string => {
     // Vérifier si la valeur est un nombre valide
@@ -613,7 +645,7 @@ const Dashboard: React.FC = () => {
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <h1 className="text-xl font-bold text-teal-400">🔮 Oracle Portfolio</h1>
-                <div className="text-xs text-gray-500">v2.1.0 - Métriques corrigées</div>
+                <div className="text-xs text-gray-500">v2.2.0 - Pourcentages économiques corrigés</div>
               </div>
             </div>
             <nav className="hidden md:block">
@@ -683,12 +715,12 @@ const Dashboard: React.FC = () => {
                     <span className="text-green-400">{currentCountryData.regime}</span>
                   </div>
                   <div className="text-sm text-gray-400">
-                    Confiance: {currentCountryData.confidence}%
+                    Confiance: {formatConfidenceIndex(currentCountryData.confidence)}%
                   </div>
                   <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
                     <div 
                       className="bg-green-500 h-2 rounded-full" 
-                      style={{ width: `${currentCountryData.confidence}%` }}
+                      style={{ width: `${formatConfidenceIndex(currentCountryData.confidence)}%` }}
                     ></div>
                   </div>
                   <div className="text-xs text-gray-500 mt-2">
@@ -725,12 +757,12 @@ const Dashboard: React.FC = () => {
                       <span className="text-green-400">{currentCountryData.regime}</span>
                     </div>
                     <div className="text-sm text-gray-400 mb-2">
-                      Indice de confiance: {currentCountryData.confidence}%
+                      Indice de confiance: {formatConfidenceIndex(currentCountryData.confidence)}%
                     </div>
                     <div className="w-full bg-gray-700 rounded-full h-2">
                       <div 
                         className="bg-blue-500 h-2 rounded-full" 
-                        style={{ width: `${currentCountryData.confidence}%` }}
+                        style={{ width: `${formatConfidenceIndex(currentCountryData.confidence)}%` }}
                       ></div>
                     </div>
                   </div>
@@ -738,15 +770,15 @@ const Dashboard: React.FC = () => {
                   <div className="grid grid-cols-3 gap-4 text-center">
                     <div>
                       <div className="text-sm text-gray-400">Croissance</div>
-                      <div className="text-lg font-bold text-white">{currentCountryData.indicators.growth}%</div>
+                      <div className="text-lg font-bold text-white">{formatEconomicPercentage(currentCountryData.indicators.growth)}%</div>
                     </div>
                     <div>
                       <div className="text-sm text-gray-400">Inflation</div>
-                      <div className="text-lg font-bold text-white">{currentCountryData.indicators.inflation}%</div>
+                      <div className="text-lg font-bold text-white">{formatEconomicPercentage(currentCountryData.indicators.inflation)}%</div>
                     </div>
                     <div>
                       <div className="text-sm text-gray-400">Chômage</div>
-                      <div className="text-lg font-bold text-white">{currentCountryData.indicators.unemployment}%</div>
+                      <div className="text-lg font-bold text-white">{formatEconomicPercentage(currentCountryData.indicators.unemployment)}%</div>
                     </div>
                   </div>
 

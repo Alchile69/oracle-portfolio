@@ -912,11 +912,14 @@ const Dashboard: React.FC = () => {
                         
                         console.log('🛡️ RENDER GUARD: All checks passed, rendering chart with', chartData.length, 'data points');
                         
-                        // Rendu sécurisé du graphique
+                        // Rendu sécurisé du graphique avec PATCH ULTRA-DÉFENSIF
                         try {
+                          // 🛡️ PATCH CRITIQUE: TOUJOURS passer un array à LineChart
+                          const safeChartData = Array.isArray(chartData) ? chartData : [];
+                          
                           return (
                             <ResponsiveContainer width="100%" height="100%">
-                              <LineChart data={chartData}>
+                              <LineChart data={safeChartData}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                                 <XAxis 
                                   dataKey="date" 
@@ -990,7 +993,7 @@ const Dashboard: React.FC = () => {
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
-                          data={pieData}
+                          data={Array.isArray(pieData) ? pieData : []}
                           cx="50%"
                           cy="50%"
                           innerRadius={30}
@@ -998,7 +1001,7 @@ const Dashboard: React.FC = () => {
                           paddingAngle={2}
                           dataKey="value"
                         >
-                          {pieData.map((entry, index) => (
+                          {(Array.isArray(pieData) ? pieData : []).map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
@@ -1006,7 +1009,7 @@ const Dashboard: React.FC = () => {
                     </ResponsiveContainer>
                   </div>
                   <div className="flex-1 ml-6">
-                    {pieData.map((item, index) => (
+                    {(Array.isArray(pieData) ? pieData : []).map((item, index) => (
                       <div key={index} className="flex items-center justify-between mb-2">
                         <div className="flex items-center">
                           <div 

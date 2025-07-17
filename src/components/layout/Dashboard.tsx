@@ -485,7 +485,27 @@ const Dashboard: React.FC = () => {
     }
   }, [backtestingData]);
 
-  // 🔧 MÉTRIQUES ROBUSTES: Calculate performance metrics avec vérifications
+  // 🛡️ HELPER: Fonction pour sécuriser les calculs numériques
+  const safeNumberToPercentage = (value: any, fallback: string = 'N/A'): string => {
+    // Vérifier si la valeur est un nombre valide
+    if (typeof value === 'number' && !isNaN(value) && isFinite(value)) {
+      return (value * 100).toFixed(1);
+    }
+    
+    // Essayer de convertir en nombre si c'est une string
+    if (typeof value === 'string') {
+      const parsed = parseFloat(value);
+      if (!isNaN(parsed) && isFinite(parsed)) {
+        return (parsed * 100).toFixed(1);
+      }
+    }
+    
+    // Retourner le fallback si la valeur n'est pas valide
+    console.warn('🛡️ SAFE NUMBER: Invalid value for percentage calculation:', value, typeof value);
+    return fallback;
+  };
+
+  // 🔧 MÉTRIQUES ULTRA-ROBUSTES: Calculate performance metrics avec vérifications complètes
   const performanceMetrics = React.useMemo(() => {
     try {
       console.log('🔍 METRICS DEBUG - START');
@@ -493,31 +513,60 @@ const Dashboard: React.FC = () => {
       console.log('🔍 backtestingData.metrics:', backtestingData?.metrics);
       console.log('🔍 backtestingData.benchmark_metrics:', backtestingData?.benchmark_metrics);
       console.log('🔍 backtestingData.outperformance:', backtestingData?.outperformance);
-      console.log('🔍 backtestingData structure:', backtestingData);
       
-      if (!backtestingData?.metrics || !backtestingData?.benchmark_metrics) {
-        console.log('🔍 METRICS: Missing metrics data, returning defaults');
+      // 🛡️ DÉFENSE 1: Vérifier que les données de base existent
+      if (!backtestingData) {
+        console.log('🔍 METRICS: No backtesting data, returning defaults');
         return {
-          oracleReturn: '0.0',
-          benchmarkReturn: '0.0',
-          outperformance: '0.0',
+          oracleReturn: 'N/A',
+          benchmarkReturn: 'N/A',
+          outperformance: 'N/A',
           totalMonths: 0
         };
       }
       
-      const oracleReturn = (backtestingData.metrics.total_return * 100).toFixed(1);
-      const benchmarkReturn = (backtestingData.benchmark_metrics.total_return * 100).toFixed(1);
-      const outperformance = (backtestingData.outperformance.total_return * 100).toFixed(1);
-      const totalMonths = backtestingData.data_quality?.total_months || backtestingData.period?.total_months || 0;
+      // 🛡️ DÉFENSE 2: Vérifier les structures de métriques
+      const hasMetrics = backtestingData.metrics && typeof backtestingData.metrics === 'object';
+      const hasBenchmarkMetrics = backtestingData.benchmark_metrics && typeof backtestingData.benchmark_metrics === 'object';
+      const hasOutperformance = backtestingData.outperformance && typeof backtestingData.outperformance === 'object';
       
-      console.log('🔍 METRICS: Calculated values:', { oracleReturn, benchmarkReturn, outperformance, totalMonths });
-      return { oracleReturn, benchmarkReturn, outperformance, totalMonths };
+      console.log('🔍 METRICS: Structure validation:', { hasMetrics, hasBenchmarkMetrics, hasOutperformance });
+      
+      // 🛡️ DÉFENSE 3: Extraire les valeurs avec vérifications
+      const oracleReturnRaw = hasMetrics ? backtestingData.metrics.total_return : undefined;
+      const benchmarkReturnRaw = hasBenchmarkMetrics ? backtestingData.benchmark_metrics.total_return : undefined;
+      const outperformanceRaw = hasOutperformance ? backtestingData.outperformance.total_return : undefined;
+      
+      console.log('🔍 METRICS: Raw values:', { 
+        oracleReturnRaw, 
+        benchmarkReturnRaw, 
+        outperformanceRaw,
+        oracleType: typeof oracleReturnRaw,
+        benchmarkType: typeof benchmarkReturnRaw,
+        outperformanceType: typeof outperformanceRaw
+      });
+      
+      // 🛡️ DÉFENSE 4: Calculer avec la fonction sécurisée
+      const oracleReturn = safeNumberToPercentage(oracleReturnRaw);
+      const benchmarkReturn = safeNumberToPercentage(benchmarkReturnRaw);
+      const outperformance = safeNumberToPercentage(outperformanceRaw);
+      
+      // 🛡️ DÉFENSE 5: Calculer les mois avec fallback
+      const totalMonths = backtestingData.data_quality?.total_months || 
+                         backtestingData.period?.total_months || 
+                         backtestingData.total_months || 
+                         0;
+      
+      const result = { oracleReturn, benchmarkReturn, outperformance, totalMonths };
+      console.log('🔍 METRICS: Final calculated values:', result);
+      
+      return result;
     } catch (error) {
       console.error('🔍 Error calculating performance metrics:', error);
       return {
-        oracleReturn: '0.0',
-        benchmarkReturn: '0.0',
-        outperformance: '0.0',
+        oracleReturn: 'N/A',
+        benchmarkReturn: 'N/A',
+        outperformance: 'N/A',
         totalMonths: 0
       };
     }
@@ -834,20 +883,20 @@ const Dashboard: React.FC = () => {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                   <div className="bg-gray-700 rounded-lg p-3 text-center">
                     <div className="text-xs text-gray-400">Rendement Oracle</div>
-                    <div className="text-lg font-bold text-teal-400">
-                      {performanceMetrics.oracleReturn}%
+                    <div className={`text-lg font-bold ${performanceMetrics.oracleReturn === 'N/A' ? 'text-gray-400' : 'text-teal-400'}`}>
+                      {performanceMetrics.oracleReturn === 'N/A' ? 'N/A' : `${performanceMetrics.oracleReturn}%`}
                     </div>
                   </div>
                   <div className="bg-gray-700 rounded-lg p-3 text-center">
                     <div className="text-xs text-gray-400">Rendement Benchmark</div>
-                    <div className="text-lg font-bold text-blue-400">
-                      {performanceMetrics.benchmarkReturn}%
+                    <div className={`text-lg font-bold ${performanceMetrics.benchmarkReturn === 'N/A' ? 'text-gray-400' : 'text-blue-400'}`}>
+                      {performanceMetrics.benchmarkReturn === 'N/A' ? 'N/A' : `${performanceMetrics.benchmarkReturn}%`}
                     </div>
                   </div>
                   <div className="bg-gray-700 rounded-lg p-3 text-center">
                     <div className="text-xs text-gray-400">Surperformance</div>
-                    <div className="text-lg font-bold text-green-400">
-                      {performanceMetrics.outperformance}%
+                    <div className={`text-lg font-bold ${performanceMetrics.outperformance === 'N/A' ? 'text-gray-400' : 'text-green-400'}`}>
+                      {performanceMetrics.outperformance === 'N/A' ? 'N/A' : `${performanceMetrics.outperformance}%`}
                     </div>
                   </div>
                   <div className="bg-gray-700 rounded-lg p-3 text-center">

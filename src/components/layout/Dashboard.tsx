@@ -319,9 +319,10 @@ const Dashboard: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Update country data when selectedCountry changes
+  // Update country data when selectedCountry changes - CORRIGÉ POUR ÉVITER L'ERREUR .length
   useEffect(() => {
-    if (countriesData.length > 0) {
+    // 🛡️ CORRECTION CRITIQUE: Vérifier que countriesData existe ET est un array
+    if (countriesData && Array.isArray(countriesData) && countriesData.length > 0) {
       const countryData = countriesData.find(c => c.code === selectedCountry);
       if (countryData) {
         setCurrentCountryData(countryData);

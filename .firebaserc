@@ -1,5 +1,26 @@
 {
   "projects": {
-    "default": "oracle-portfolio-prod"
-  }
+    "default": "oracle-portfolio-prod",
+    "staging": "oracle-portfolio-staging",
+    "production": "oracle-portfolio-prod"
+  },
+  "targets": {
+    "oracle-portfolio-prod": {
+      "hosting": {
+        "production": [
+          "oracle-portfolio-prod"
+        ]
+      }
+    },
+    "oracle-portfolio-staging": {
+      "hosting": {
+        "staging": [
+          "oracle-portfolio-staging"
+        ]
+      }
+    }
+  },
+  "etags": {},
+  "dataconnectEmulatorConfig": {}
 }
+

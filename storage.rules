@@ -1,0 +1,23 @@
+// Oracle Portfolio 3.0 - Firebase Storage Security Rules
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Règles pour les assets publics (lecture seule)
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+    
+    // Règles pour les données temporaires (accès limité)
+    match /temp/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Règles par défaut (accès restreint)
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

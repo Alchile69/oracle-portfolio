@@ -541,6 +541,38 @@ const Dashboard: React.FC = () => {
     return (value * 100).toFixed(0);
   };
 
+  // 🛡️ HELPER: Fonction pour détecter les valeurs aberrantes de backtesting
+  const isBacktestingDataValid = (data: any): boolean => {
+    if (!data || !data.metrics || !data.benchmark_metrics) {
+      return false;
+    }
+    
+    // Détecter les valeurs aberrantes typiques
+    const oracleReturn = data.metrics.totalReturn;
+    const benchmarkReturn = data.benchmark_metrics.totalReturn;
+    const totalMonths = data.period?.total_months;
+    
+    // Valeurs impossibles
+    if (oracleReturn === -100 || benchmarkReturn === -100) {
+      console.warn('🚨 BACKTESTING: Valeurs aberrantes détectées (-100%)');
+      return false;
+    }
+    
+    // Période aberrante (plus de 1000 mois = ~83 ans)
+    if (totalMonths && totalMonths > 1000) {
+      console.warn('🚨 BACKTESTING: Période aberrante détectée:', totalMonths, 'mois');
+      return false;
+    }
+    
+    // Valeurs extrêmes (perte totale impossible sur périodes normales)
+    if (Math.abs(oracleReturn) > 95 && Math.abs(benchmarkReturn) > 95) {
+      console.warn('🚨 BACKTESTING: Pertes extrêmes détectées:', oracleReturn, benchmarkReturn);
+      return false;
+    }
+    
+    return true;
+  };
+
   // 🛡️ HELPER: Fonction pour sécuriser les calculs numériques (valeurs déjà en %)
   const safeNumberToPercentage = (value: any, fallback: string = 'N/A'): string => {
     // Vérifier si la valeur est un nombre valide
@@ -645,7 +677,7 @@ const Dashboard: React.FC = () => {
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <h1 className="text-xl font-bold text-teal-400">🔮 Oracle Portfolio</h1>
-                <div className="text-xs text-gray-500">v2.2.0 - Pourcentages économiques corrigés</div>
+                <div className="text-xs text-gray-500">v2.3.0 - Validation données backtesting</div>
               </div>
             </div>
             <nav className="hidden md:block">
@@ -944,8 +976,10 @@ const Dashboard: React.FC = () => {
             {/* Results Display */}
             {backtestingData && !backtestingError && (
               <div className="mt-6">
-                {/* Performance Metrics */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                {isBacktestingDataValid(backtestingData) ? (
+                  <>
+                    {/* Performance Metrics */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                   <div className="bg-gray-700 rounded-lg p-3 text-center">
                     <div className="text-xs text-gray-400">Rendement Oracle</div>
                     <div className={`text-lg font-bold ${performanceMetrics.oracleReturn === 'N/A' ? 'text-gray-400' : 'text-teal-400'}`}>
@@ -971,8 +1005,21 @@ const Dashboard: React.FC = () => {
                     </div>
                   </div>
                 </div>
+                  </>
+                ) : (
+                  <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-6 text-center">
+                    <div className="text-red-400 text-lg font-medium mb-2">⚠️ Données non disponibles</div>
+                    <div className="text-gray-300 text-sm mb-4">
+                      Les données de backtesting ne sont pas disponibles pour la période sélectionnée.
+                    </div>
+                    <div className="text-gray-400 text-xs">
+                      Veuillez sélectionner une période plus récente (à partir de 2020).
+                    </div>
+                  </div>
+                )}
 
                 {/* Chart - SÉCURISÉ AVEC VÉRIFICATIONS DÉFENSIVES */}
+                {isBacktestingDataValid(backtestingData) && (
                 <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
                   <div>
                     <h4 className="text-white font-medium mb-3">Performance Cumulative (%)</h4>
@@ -1092,6 +1139,7 @@ const Dashboard: React.FC = () => {
                     </div>
                   </div>
                 </div>
+                )}
               </div>
             )}
           </div>

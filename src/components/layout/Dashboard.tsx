@@ -86,9 +86,32 @@ const Dashboard: React.FC = () => {
   const [isLoadingMarketStress, setIsLoadingMarketStress] = useState(true);
   const [isLoadingETF, setIsLoadingETF] = useState(true);
   const [isLoadingBacktesting, setIsLoadingBacktesting] = useState(false);
-  const [startDate, setStartDate] = useState('2020-01-01');
-  const [endDate, setEndDate] = useState('2024-12-31');
   const [backtestingError, setBacktestingError] = useState<string | null>(null);
+  const [startDate, setStartDate] = React.useState('2023-01-01'); // Ajusté à la période disponible
+  const [endDate, setEndDate] = React.useState('2024-12-31');
+  
+  // 🛡️ VALIDATION PÉRIODE: Ajuster automatiquement les dates selon les données disponibles
+  const adjustDateRange = (start: string, end: string) => {
+    const minDate = '2023-01-01'; // Première date disponible dans l'API
+    const maxDate = '2024-12-31'; // Dernière date disponible
+    
+    let adjustedStart = start;
+    let adjustedEnd = end;
+    
+    // Ajuster la date de début si elle est antérieure aux données disponibles
+    if (start < minDate) {
+      adjustedStart = minDate;
+      console.warn('🔧 PÉRIODE: Date de début ajustée de', start, 'à', adjustedStart, '(données disponibles à partir de 2023)');
+    }
+    
+    // Ajuster la date de fin si elle est postérieure aux données disponibles
+    if (end > maxDate) {
+      adjustedEnd = maxDate;
+      console.warn('🔧 PÉRIODE: Date de fin ajustée de', end, 'à', adjustedEnd, '(données disponibles jusqu\'à 2024)');
+    }
+    
+    return { adjustedStart, adjustedEnd };
+  };
 
   // 🔧 FONCTION ROBUSTE: Fetch Countries data avec gestion d'erreurs
   const fetchCountriesData = async () => {
@@ -209,16 +232,26 @@ const Dashboard: React.FC = () => {
   // 🛡️ FONCTION HYPER-DÉFENSIVE: Backtesting incassable pour production
   const fetchBacktestingData = async () => {
     try {
-      console.log(`Launching backtest for country: ${selectedCountry} from ${startDate} to ${endDate}`);
+      // 🔧 AJUSTEMENT AUTOMATIQUE: Corriger les dates selon les données disponibles
+      const { adjustedStart, adjustedEnd } = adjustDateRange(startDate, endDate);
+      
+      console.log(`Launching backtest for country: ${selectedCountry} from ${adjustedStart} to ${adjustedEnd}`);
+      if (adjustedStart !== startDate || adjustedEnd !== endDate) {
+        console.warn('🔧 PÉRIODE: Dates ajustées automatiquement pour correspondre aux données disponibles');
+        // Mettre à jour les états avec les dates ajustées
+        setStartDate(adjustedStart);
+        setEndDate(adjustedEnd);
+      }
+      
       setIsLoadingBacktesting(true);
       setBacktestingError(null);
       
       // 🛡️ DÉFENSE 1: Validation des paramètres
-      if (!selectedCountry || !startDate || !endDate) {
+      if (!selectedCountry || !adjustedStart || !adjustedEnd) {
         throw new Error('Missing required parameters');
       }
 
-      const url = `https://us-central1-oracle-portfolio-prod.cloudfunctions.net/getBacktesting?start_date=${startDate}&end_date=${endDate}&country=${selectedCountry}`;
+      const url = `https://us-central1-oracle-portfolio-prod.cloudfunctions.net/getBacktesting?start_date=${adjustedStart}&end_date=${adjustedEnd}&country=${selectedCountry}`;
       console.log('🚀 BACKTESTING: Fetching data from:', url);
 
       // 🛡️ DÉFENSE 2: Timeout et headers robustes
@@ -252,6 +285,40 @@ const Dashboard: React.FC = () => {
       console.log('🔍 Raw response data:', JSON.stringify(data, null, 2));
       console.log('🔍 Data keys:', Object.keys(data || {}));
       console.log('🔍 Data.data keys:', data?.data ? Object.keys(data.data) : 'No data.data');
+      
+      // 🔍 DIAGNOSTIC PÉRIODE: Analyser la couverture temporelle complète
+      if (data?.data?.performance_data?.cumulative_performance) {
+        const points = data.data.performance_data.cumulative_performance;
+        console.log('🔍 PÉRIODE DEBUG - START');
+        console.log('🔍 PÉRIODE: Nombre total de points:', points.length);
+        
+        if (points.length > 0) {
+          console.log('🔍 PÉRIODE: Premier point:', points[0]);
+          console.log('🔍 PÉRIODE: Dernier point:', points[points.length - 1]);
+          
+          // Analyser toutes les dates pour voir la couverture
+          const dates = points.map(p => p.date).filter(Boolean);
+          console.log('🔍 PÉRIODE: Première date:', dates[0]);
+          console.log('🔍 PÉRIODE: Dernière date:', dates[dates.length - 1]);
+          console.log('🔍 PÉRIODE: Échantillon de dates:', dates.slice(0, 10));
+          
+          // Compter par année
+          const yearCounts = {};
+          dates.forEach(date => {
+            const year = date.substring(0, 4);
+            yearCounts[year] = (yearCounts[year] || 0) + 1;
+          });
+          console.log('🔍 PÉRIODE: Répartition par année:', yearCounts);
+          
+          // Vérifier si on a des données pour 2021-2022
+          const has2021 = dates.some(d => d.startsWith('2021'));
+          const has2022 = dates.some(d => d.startsWith('2022'));
+          const has2023 = dates.some(d => d.startsWith('2023'));
+          const has2024 = dates.some(d => d.startsWith('2024'));
+          console.log('🔍 PÉRIODE: Couverture par année:', { has2021, has2022, has2023, has2024 });
+        }
+        console.log('🔍 PÉRIODE DEBUG - END');
+      }
       
       // 🔍 DIAGNOSTIC MÉTRIQUES: Vérifier la structure des métriques
       if (data?.data) {
@@ -677,7 +744,7 @@ const Dashboard: React.FC = () => {
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <h1 className="text-xl font-bold text-teal-400">🔮 Oracle Portfolio</h1>
-                <div className="text-xs text-gray-500">v2.3.0 - Validation données backtesting</div>
+                <div className="text-xs text-gray-500">v2.4.0 - Validation période automatique</div>
               </div>
             </div>
             <nav className="hidden md:block">

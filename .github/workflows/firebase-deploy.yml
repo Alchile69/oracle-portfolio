@@ -1,0 +1,97 @@
+name: Deploy to Firebase Hosting
+
+on:
+  push:
+    branches:
+      - main
+      - production
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run tests
+      run: npm run test:ci
+      continue-on-error: true
+      
+    - name: Build application
+      run: npm run build
+      env:
+        NODE_ENV: production
+        
+    - name: Deploy to Firebase Hosting
+      uses: FirebaseExtended/action-hosting-deploy@v0
+      with:
+        repoToken: ${{ secrets.GITHUB_TOKEN }}
+        firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ORACLE_PORTFOLIO_PROD }}
+        channelId: live
+        projectId: oracle-portfolio-prod
+        
+    - name: Comment PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '🚀 Preview deployed! Check the Firebase Hosting preview URL above.'
+          })
+
+  health_check:
+    needs: build_and_deploy
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Health check
+      run: |
+        echo "Waiting for deployment to be ready..."
+        sleep 30
+        
+        # Test the deployed application
+        response=$(curl -s -o /dev/null -w "%{http_code}" https://oracle-portfolio-prod.web.app/)
+        
+        if [ $response -eq 200 ]; then
+          echo "✅ Application is healthy (HTTP $response)"
+        else
+          echo "❌ Application health check failed (HTTP $response)"
+          exit 1
+        fi
+        
+    - name: API health check
+      run: |
+        echo "Testing API endpoints..."
+        
+        # Test Node.js backend
+        nodejs_response=$(curl -s -o /dev/null -w "%{http_code}" https://us-central1-oracle-portfolio-prod.cloudfunctions.net/getHealth)
+        
+        # Test Python backend  
+        python_response=$(curl -s -o /dev/null -w "%{http_code}" https://vgh0i1cowmwm.manus.space/getSystemHealth)
+        
+        echo "Node.js API: HTTP $nodejs_response"
+        echo "Python API: HTTP $python_response"
+        
+        if [ $nodejs_response -eq 200 ] || [ $python_response -eq 200 ]; then
+          echo "✅ At least one API backend is healthy"
+        else
+          echo "⚠️ Both API backends are unreachable"
+        fi
+

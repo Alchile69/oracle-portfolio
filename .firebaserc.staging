@@ -1,0 +1,18 @@
+{
+  "projects": {
+    "default": "oracle-portfolio-staging",
+    "staging": "oracle-portfolio-staging",
+    "production": "oracle-portfolio-prod"
+  },
+  "targets": {
+    "oracle-portfolio-staging": {
+      "hosting": {
+        "staging": [
+          "oracle-portfolio-staging"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
+

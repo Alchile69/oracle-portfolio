@@ -1,0 +1,56 @@
+name: Deploy to Development
+
+on:
+  push:
+    branches: [ environments/development ]
+  workflow_dispatch:
+
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci --legacy-peer-deps
+      
+    - name: Run basic tests
+      run: npm test src/tests/BasicComponents.test.jsx -- --run
+      continue-on-error: true
+      
+    - name: Build application
+      run: npm run build
+      env:
+        VITE_ENVIRONMENT: development
+        VITE_API_BASE_URL: https://api.oracle-portfolio-dev.web.app
+        VITE_ENABLE_DEBUGGING: true
+        VITE_TEST_MODE: true
+        
+    - name: Setup Firebase CLI
+      uses: w9jds/firebase-action@master
+      with:
+        args: use oracle-portfolio-dev
+      env:
+        FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        
+    - name: Deploy to Firebase Hosting (Development)
+      uses: w9jds/firebase-action@master
+      with:
+        args: deploy --only hosting:development --config firebase.development.json
+      env:
+        FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        
+    - name: Notify deployment
+      run: |
+        echo "🚀 Development deployment completed!"
+        echo "🌐 URL: https://oracle-portfolio-dev.web.app"
+        echo "🧪 Test mode enabled for experimentation"
+

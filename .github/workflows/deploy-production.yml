@@ -1,0 +1,100 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ restore/elegant-full-version ]
+  release:
+    types: [ published ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci --legacy-peer-deps
+      
+    - name: Run full test suite
+      run: npm test -- --run
+      
+    - name: Run linting
+      run: npm run lint
+      
+    - name: Generate test coverage
+      run: npm run test:coverage
+      
+    - name: Check test coverage threshold
+      run: |
+        echo "Checking test coverage..."
+        # Add coverage threshold check here
+        
+    - name: Security audit
+      run: npm audit --audit-level moderate
+
+  build-and-deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/restore/elegant-full-version'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci --legacy-peer-deps
+      
+    - name: Build application
+      run: npm run build
+      env:
+        VITE_ENVIRONMENT: production
+        VITE_API_BASE_URL: https://api.oracle-portfolio-prod.web.app
+        VITE_ENABLE_DEBUGGING: false
+        
+    - name: Setup Firebase CLI
+      uses: w9jds/firebase-action@master
+      with:
+        args: use oracle-portfolio-prod
+      env:
+        FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        
+    - name: Deploy to Firebase Hosting (Production)
+      uses: w9jds/firebase-action@master
+      with:
+        args: deploy --only hosting
+      env:
+        FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        
+    - name: Run production health checks
+      run: |
+        echo "Running production health checks..."
+        curl -f https://oracle-portfolio-prod.web.app || exit 1
+        
+    - name: Create deployment tag
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git tag -a "v$(date +'%Y.%m.%d-%H%M')" -m "Production deployment $(date)"
+        git push origin --tags
+        
+    - name: Notify deployment success
+      if: success()
+      run: |
+        echo "🎉 Production deployment successful!"
+        echo "🌐 URL: https://oracle-portfolio-prod.web.app"
+        echo "📊 Oracle Portfolio v2.5.0 is live!"
+

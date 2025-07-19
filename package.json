@@ -11,7 +11,13 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "test:watch": "vitest --watch"
+    "test:watch": "vitest --watch",
+    "deploy:dev": "./scripts/deploy.sh development",
+    "deploy:staging": "./scripts/deploy.sh staging",
+    "deploy:prod": "./scripts/deploy.sh production",
+    "env:status": "./scripts/environments.sh status",
+    "env:switch": "./scripts/environments.sh switch",
+    "env:test": "./scripts/environments.sh test"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

@@ -1,106 +1,29 @@
 import React, { useState } from 'react';
-import NavigationTabs from './NavigationTabs';
+import OriginalDashboard from './OriginalDashboard';
+import OriginalAnalytics from './OriginalAnalytics';
 import MultiCountryComparison from './MultiCountryComparison';
 
-// Composant placeholder pour les sections existantes
-const ExistingDashboard = () => (
-  <div className="min-h-screen bg-[#0f0f23] text-white">
-    <div className="p-6">
-      <div className="text-center py-20">
-        <h2 className="text-2xl font-bold text-white mb-4">
-          📊 Dashboard Oracle Portfolio
-        </h2>
-        <p className="text-gray-400 mb-6">
-          Cette section intègre le dashboard existant de l'application Oracle Portfolio.
-        </p>
-        <div className="bg-[#1a1a2e] border border-gray-700 rounded-lg p-6 max-w-md mx-auto">
-          <p className="text-sm text-gray-300">
-            Le dashboard existant sera préservé et intégré ici, incluant :
-          </p>
-          <ul className="text-left text-sm text-gray-400 mt-4 space-y-2">
-            <li>• Sélection du pays</li>
-            <li>• Régime économique</li>
-            <li>• Market Stress Indicators</li>
-            <li>• Backtesting Engine</li>
-            <li>• Allocations de portefeuille</li>
-            <li>• ETF Prices</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-const ExistingAnalytics = () => (
-  <div className="min-h-screen bg-[#0f0f23] text-white">
-    <div className="p-6">
-      <div className="text-center py-20">
-        <h2 className="text-2xl font-bold text-white mb-4">
-          📈 Analytics Oracle Portfolio
-        </h2>
-        <p className="text-gray-400 mb-6">
-          Cette section intègre les analytics existants de l'application Oracle Portfolio.
-        </p>
-        <div className="bg-[#1a1a2e] border border-gray-700 rounded-lg p-6 max-w-md mx-auto">
-          <p className="text-sm text-gray-300">
-            Les analytics existants seront préservés et intégrés ici, incluant :
-          </p>
-          <ul className="text-left text-sm text-gray-400 mt-4 space-y-2">
-            <li>• Analyses de performance</li>
-            <li>• Métriques de risque</li>
-            <li>• Corrélations</li>
-            <li>• Indicateurs techniques</li>
-            <li>• Rapports détaillés</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-const ExistingAccess = () => (
-  <div className="min-h-screen bg-[#0f0f23] text-white">
-    <div className="p-6">
-      <div className="text-center py-20">
-        <h2 className="text-2xl font-bold text-white mb-4">
-          🔐 Get Full Access
-        </h2>
-        <p className="text-gray-400 mb-6">
-          Cette section intègre le système d'accès premium existant.
-        </p>
-        <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg p-6 max-w-md mx-auto">
-          <p className="text-sm text-white">
-            Le système d'authentification et d'accès premium sera préservé et intégré ici.
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
 const IntegratedApp = () => {
-  const [activeTab, setActiveTab] = useState('comparison'); // Démarrer sur notre nouveau module
+  const [activeTab, setActiveTab] = useState('dashboard');
 
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <ExistingDashboard />;
+        return <OriginalDashboard />;
       case 'analytics':
-        return <ExistingAnalytics />;
+        return <OriginalAnalytics />;
       case 'comparison':
         return <MultiCountryComparison />;
-      case 'access':
-        return <ExistingAccess />;
       default:
-        return <MultiCountryComparison />;
+        return <OriginalDashboard />;
     }
   };
 
   return (
     <div className="min-h-screen bg-[#0f0f23]">
-      {/* En-tête de l'application */}
-      <header className="bg-[#1a1a2e] border-b border-gray-800">
-        <div className="px-6 py-4">
+      {/* Navigation Header */}
+      <header className="bg-[#1a1a2e] border-b border-gray-700 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             {/* Logo et titre */}
             <div className="flex items-center gap-3">
@@ -109,38 +32,71 @@ const IntegratedApp = () => {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-white">Oracle Portfolio</h1>
-                <p className="text-xs text-gray-400">v2.5.0 - Intégration Multi-Pays</p>
+                <p className="text-xs text-gray-400">v2.4.0 - Validation période automatique</p>
               </div>
             </div>
 
             {/* Informations de statut */}
             <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-xs text-gray-400">Dernière mise à jour</p>
-                <p className="text-sm text-white">{new Date().toLocaleString('fr-FR')}</p>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <span className="text-xs text-gray-400">Dernière mise à jour</span>
               </div>
-              
-              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" title="Système opérationnel"></div>
+              <span className="text-xs text-green-400 font-mono">
+                {new Date().toLocaleString('fr-FR')}
+              </span>
             </div>
           </div>
-        </div>
 
-        {/* Navigation */}
-        <NavigationTabs activeTab={activeTab} onTabChange={setActiveTab} />
+          {/* Navigation Tabs */}
+          <nav className="flex gap-2 mt-4">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                activeTab === 'dashboard'
+                  ? 'bg-cyan-600 text-white'
+                  : 'bg-[#2d2d44] text-gray-300 hover:bg-[#3d3d54]'
+              }`}
+            >
+              📊 Dashboard
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('analytics')}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                activeTab === 'analytics'
+                  ? 'bg-cyan-600 text-white'
+                  : 'bg-[#2d2d44] text-gray-300 hover:bg-[#3d3d54]'
+              }`}
+            >
+              📈 Analytics
+            </button>
+
+            <button
+              onClick={() => setActiveTab('comparison')}
+              className={`px-4 py-2 rounded-lg font-medium transition-all relative ${
+                activeTab === 'comparison'
+                  ? 'bg-cyan-600 text-white'
+                  : 'bg-[#2d2d44] text-gray-300 hover:bg-[#3d3d54]'
+              }`}
+            >
+              🌍 Comparaison
+              <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                Nouveau
+              </span>
+            </button>
+
+            <button className="px-4 py-2 rounded-lg font-medium bg-green-600 text-white hover:bg-green-700 transition-all">
+              🔐 Get Full Access
+            </button>
+          </nav>
+        </div>
       </header>
 
       {/* Contenu principal */}
       <main>
         {renderContent()}
       </main>
-
-      {/* Footer */}
-      <footer className="bg-[#1a1a2e] border-t border-gray-800 px-6 py-4">
-        <div className="flex items-center justify-between text-sm text-gray-400">
-          <span>© 2025 Oracle Portfolio - Tous droits réservés</span>
-          <span>Intégration réussie du module Vue Comparative Multi-Pays</span>
-        </div>
-      </footer>
     </div>
   );
 };

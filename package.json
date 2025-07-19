@@ -24,7 +24,8 @@
     "backup:status": "./scripts/backup-scheduler.sh status",
     "backup:list": "./scripts/backup-scheduler.sh list",
     "backup:cleanup": "./scripts/backup-scheduler.sh cleanup",
-    "restore": "./scripts/restore.sh"
+    "restore": "./scripts/restore.sh",
+    "indicators:test": "node -e \"console.log('Testing financial indicators...'); const indicators = require('./src/utils/financialIndicators.js'); console.log('✅ Technical indicators loaded:', Object.keys(indicators.technicalIndicators).length); console.log('✅ Risk indicators loaded:', Object.keys(indicators.riskIndicators).length); console.log('✅ All indicator modules loaded successfully');\""
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

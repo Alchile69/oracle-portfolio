@@ -4,6 +4,7 @@ import Dashboard from './components/layout/Dashboard';
 import LoginModal from './components/auth/LoginModal';
 import ExtensibleConfigurationPanel from './components/admin/ExtensibleConfigurationPanel';
 import PluginWizard from './components/admin/PluginWizard';
+import IndicatorDashboard from './components/indicators/IndicatorDashboard';
 import pluginSystem from './utils/PluginSystem';
 import './App.css';
 
@@ -81,12 +82,7 @@ function App() {
           />
         );
       case 'analytics':
-        return (
-          <div className="analytics-placeholder">
-            <h2>📈 Analytics</h2>
-            <p>Module d'analytics en développement...</p>
-          </div>
-        );
+        return <IndicatorDashboard />;
       default:
         return <Dashboard />;
     }

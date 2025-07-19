@@ -17,7 +17,14 @@
     "deploy:prod": "./scripts/deploy.sh production",
     "env:status": "./scripts/environments.sh status",
     "env:switch": "./scripts/environments.sh switch",
-    "env:test": "./scripts/environments.sh test"
+    "env:test": "./scripts/environments.sh test",
+    "backup:full": "./scripts/backup.sh full ./backup",
+    "backup:configs": "./scripts/backup.sh configs ./backup",
+    "backup:incremental": "./scripts/backup.sh incremental ./backup",
+    "backup:status": "./scripts/backup-scheduler.sh status",
+    "backup:list": "./scripts/backup-scheduler.sh list",
+    "backup:cleanup": "./scripts/backup-scheduler.sh cleanup",
+    "restore": "./scripts/restore.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

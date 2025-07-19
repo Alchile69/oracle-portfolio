@@ -1,0 +1,146 @@
+name: Automated Backup
+
+on:
+  schedule:
+    # Backup quotidien à 2h00 UTC
+    - cron: '0 2 * * *'
+    # Backup hebdomadaire le dimanche à 3h00 UTC
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+    inputs:
+      backup_type:
+        description: 'Type de backup'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+        - full
+        - configs
+        - data
+        - code
+        - incremental
+
+jobs:
+  automated-backup:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Récupérer tout l'historique Git
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci --legacy-peer-deps
+      
+    - name: Determine backup type
+      id: backup-type
+      run: |
+        if [ "${{ github.event_name }}" = "schedule" ]; then
+          if [ "${{ github.event.schedule }}" = "0 2 * * *" ]; then
+            echo "type=incremental" >> $GITHUB_OUTPUT
+          else
+            echo "type=full" >> $GITHUB_OUTPUT
+          fi
+        else
+          echo "type=${{ github.event.inputs.backup_type }}" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Create backup directory
+      run: mkdir -p backups
+      
+    - name: Run backup
+      run: ./scripts/backup.sh ${{ steps.backup-type.outputs.type }} ./backups
+      
+    - name: List backup files
+      run: |
+        echo "📋 Fichiers de backup créés:"
+        ls -lah backups/
+        
+    - name: Upload backup artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: oracle-portfolio-backup-${{ steps.backup-type.outputs.type }}-${{ github.run_number }}
+        path: backups/*.tar.gz
+        retention-days: 30
+        
+    - name: Create backup release (weekly only)
+      if: github.event.schedule == '0 3 * * 0'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: backup-${{ github.run_number }}-$(date +'%Y%m%d')
+        name: Weekly Backup - $(date +'%Y-%m-%d')
+        body: |
+          🗄️ **Backup Automatique Oracle Portfolio**
+          
+          - **Type** : ${{ steps.backup-type.outputs.type }}
+          - **Date** : $(date)
+          - **Commit** : ${{ github.sha }}
+          - **Branche** : ${{ github.ref_name }}
+          
+          ## Contenu
+          - ✅ Configurations Firebase
+          - ✅ Code source complet
+          - ✅ Tests automatisés
+          - ✅ Documentation
+          - ✅ Scripts de déploiement
+          - ✅ Historique Git
+          
+          ## Restauration
+          ```bash
+          # Télécharger et extraire
+          tar -xzf oracle-portfolio-backup-*.tar.gz
+          cd oracle-portfolio-backup-*
+          
+          # Installer et tester
+          npm ci --legacy-peer-deps
+          npm test
+          
+          # Déployer
+          ./scripts/deploy.sh development
+          ```
+        files: backups/*.tar.gz
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Cleanup old artifacts
+      run: |
+        echo "🧹 Nettoyage des anciens backups..."
+        # Garder seulement les 5 derniers backups dans artifacts
+        # (La suppression automatique est gérée par GitHub Actions retention)
+        
+    - name: Backup verification
+      run: |
+        echo "🔍 Vérification des backups créés..."
+        for backup in backups/*.tar.gz; do
+          if [ -f "$backup" ]; then
+            echo "✅ Backup vérifié: $(basename "$backup")"
+            echo "   Taille: $(du -sh "$backup" | cut -f1)"
+            echo "   Fichiers: $(tar -tzf "$backup" | wc -l)"
+          fi
+        done
+        
+    - name: Send notification (on failure)
+      if: failure()
+      run: |
+        echo "❌ Échec du backup automatisé"
+        echo "📅 Date: $(date)"
+        echo "🔧 Type: ${{ steps.backup-type.outputs.type }}"
+        echo "📋 Logs disponibles dans les artifacts GitHub Actions"
+        
+    - name: Success notification
+      if: success()
+      run: |
+        echo "✅ Backup automatisé réussi"
+        echo "📅 Date: $(date)"
+        echo "🔧 Type: ${{ steps.backup-type.outputs.type }}"
+        echo "📦 Artifacts disponibles pour 30 jours"
+

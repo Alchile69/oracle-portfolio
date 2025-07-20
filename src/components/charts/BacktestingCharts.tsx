@@ -61,36 +61,45 @@ const BacktestingCharts: React.FC<BacktestingChartsProps> = ({
 
   // Données pour le graphique des métriques
   const metricsData = useMemo(() => {
-    if (!data.metrics) return [];
+    console.log('🔍 DEBUG - data.metrics:', data.metrics);
+    console.log('🔍 DEBUG - data structure:', data);
+    
+    // 🔧 CORRECTION: Vérifier la structure imbriquée
+    const metrics = data.metrics || (data as any).data?.metrics;
+    
+    if (!metrics) {
+      console.log('❌ metrics is null/undefined');
+      return [];
+    }
     
     return [
       {
         metric: 'Rendement Total',
-        oracle: data.metrics.oracle.totalReturn * 100,
-        benchmark: data.metrics.benchmark.totalReturn * 100
+        oracle: metrics.oracle.totalReturn * 100,
+        benchmark: metrics.benchmark.totalReturn * 100
       },
       {
         metric: 'Rendement Annualisé',
-        oracle: data.metrics.oracle.annualizedReturn * 100,
-        benchmark: data.metrics.benchmark.annualizedReturn * 100
+        oracle: metrics.oracle.annualizedReturn * 100,
+        benchmark: metrics.benchmark.annualizedReturn * 100
       },
       {
         metric: 'Volatilité',
-        oracle: data.metrics.oracle.volatility * 100,
-        benchmark: data.metrics.benchmark.volatility * 100
+        oracle: metrics.oracle.volatility * 100,
+        benchmark: metrics.benchmark.volatility * 100
       },
       {
         metric: 'Ratio de Sharpe',
-        oracle: data.metrics.oracle.sharpeRatio,
-        benchmark: data.metrics.benchmark.sharpeRatio
+        oracle: metrics.oracle.sharpeRatio,
+        benchmark: metrics.benchmark.sharpeRatio
       },
       {
         metric: 'Drawdown Max',
-        oracle: Math.abs(data.metrics.oracle.maxDrawdown * 100),
-        benchmark: Math.abs(data.metrics.benchmark.maxDrawdown * 100)
+        oracle: Math.abs(metrics.oracle.maxDrawdown * 100),
+        benchmark: Math.abs(metrics.benchmark.maxDrawdown * 100)
       }
     ];
-  }, [data.metrics]);
+  }, [data]);
 
   // Données pour le graphique en secteurs des allocations (si disponible)
   const allocationData = useMemo(() => {

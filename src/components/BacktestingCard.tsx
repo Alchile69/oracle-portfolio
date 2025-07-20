@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Card from '@/components/ui/Card.tsx';
 import Skeleton from '@/components/ui/Skeleton.tsx';
-import { useCountryContext } from '@/hooks/CountryContext.tsx'; // CountryContext est bien .tsx
-import { useBacktesting } from '@/hooks/useBacktesting.ts'; // CORRIGÉ: .ts
+import { useCountryContext } from '@/hooks/CountryContext.tsx';
+import { useBacktesting } from '@/hooks/useBacktesting.ts';
 import BacktestingCharts from '@/components/charts/BacktestingCharts.tsx';
-import { formatDateTime } from '@/utils/formatters.ts'; // CORRIGÉ: .ts (les fichiers utils sont souvent .ts)
+import { formatDateTime } from '@/utils/formatters.ts';
 import { RefreshCcw, Settings, AlertTriangle, CheckCircle } from 'lucide-react';
 
 interface BacktestingCardProps {
@@ -14,7 +14,7 @@ interface BacktestingCardProps {
 const BacktestingCard: React.FC<BacktestingCardProps> = ({ className }) => {
   const { selectedCountry } = useCountryContext();
   const [params, setParams] = useState({
-    country: 'US', // Valeur par défaut si selectedCountry est undefined
+    country: 'US',
     start_date: '2020-01-01',
     end_date: '2024-12-31',
   });
@@ -22,7 +22,7 @@ const BacktestingCard: React.FC<BacktestingCardProps> = ({ className }) => {
   const { data, isLoading, error, refetch, health, fetchHealth } = useBacktesting(params);
 
   useEffect(() => {
-    setParams(prev => ({ ...prev, country: selectedCountry || 'US' })); // Assurez-vous d'avoir une valeur par défaut
+    setParams(prev => ({ ...prev, country: selectedCountry || 'US' }));
   }, [selectedCountry]);
 
   useEffect(() => {
@@ -35,8 +35,8 @@ const BacktestingCard: React.FC<BacktestingCardProps> = ({ className }) => {
   };
 
   const formattedMetrics = useMemo(() => {
-    if (!data?.metrics) return null;
-    const metrics = data.metrics.oracle;
+    if (!data?.data?.metrics) return null;
+    const metrics = data.data.metrics;
     return [
       { label: 'Rendement Total', value: `${(metrics.totalReturn * 100).toFixed(2)}%` },
       { label: 'Rendement Annualisé', value: `${(metrics.annualizedReturn * 100).toFixed(2)}%` },
@@ -46,7 +46,7 @@ const BacktestingCard: React.FC<BacktestingCardProps> = ({ className }) => {
       { label: 'Win Rate', value: `${(metrics.winRate * 100).toFixed(2)}%` },
     ];
   }, [data]);
-
+  console.log('DATA GLOBAL:', data);
   return (
     <Card
       title="Backtesting Engine"
@@ -54,7 +54,7 @@ const BacktestingCard: React.FC<BacktestingCardProps> = ({ className }) => {
       className={className}
       headerRight={
         <div className="flex items-center space-x-2">
-          {health.status === 'healthy' ? (
+          {health && health.status === 'healthy' ? (
             <span className="text-green-500 flex items-center text-sm">
               <CheckCircle size={16} className="mr-1" /> API OK
             </span>
@@ -63,59 +63,95 @@ const BacktestingCard: React.FC<BacktestingCardProps> = ({ className }) => {
               <AlertTriangle size={16} className="mr-1" /> API ERREUR
             </span>
           )}
+          <button className="text-gray-400 hover:text-white" onClick={handleRefresh} title="Rafraîchir">
+            <RefreshCcw size={20} />
+          </button>
           <button className="text-gray-400 hover:text-white">
             <Settings size={20} />
           </button>
         </div>
       }
     >
-      {error ? (
-        <div className="text-red-500 text-center py-8">
-          <AlertTriangle size={48} className="mx-auto mb-4" />
-          <p className="text-lg">Erreur lors du chargement du backtesting.</p>
-          <p className="text-sm">{error.message}</p>
-          <button
-            onClick={handleRefresh}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          >
-            Réessayer
-          </button>
+      {/* Paramètres du backtest */}
+      <div className="p-4">
+        <h3 className="text-lg font-semibold text-white mb-4">Paramètres du Backtest</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Date de début</label>
+            <input
+              type="date"
+              value={params.start_date}
+              onChange={(e) => setParams(prev => ({ ...prev, start_date: e.target.value }))}
+              className="w-full p-2 bg-gray-700 text-white rounded"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Date de fin</label>
+            <input
+              type="date"
+              value={params.end_date}
+              onChange={(e) => setParams(prev => ({ ...prev, end_date: e.target.value }))}
+              className="w-full p-2 bg-gray-700 text-white rounded"
+            />
+          </div>
+          <div className="flex items-end">
+            <button
+              onClick={handleRefresh}
+              disabled={isLoading}
+              className="w-full p-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white rounded"
+            >
+              {isLoading ? 'Calcul...' : 'Lancer le backtest'}
+            </button>
+          </div>
         </div>
-      ) : isLoading ? (
-        <div className="space-y-4">
-          <Skeleton height="h-64" className="w-full" />
+      </div>
+
+      {/* Résultats et graphiques */}
+      <div className="p-4 border-t border-gray-700">
+        {isLoading && (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {[...Array(6)].map((_, i) => (
               <Skeleton key={i} height="h-24" />
             ))}
           </div>
-        </div>
-      ) : (
-        data && (
-          <div>
+        )}
+        {error && (
+          <div className="text-red-500 text-center py-8">
+            <AlertTriangle size={48} className="mx-auto mb-4" />
+            <p className="text-lg">Erreur lors du chargement des données.</p>
+            <p className="text-sm">{error.message}</p>
+            <button
+              onClick={handleRefresh}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Réessayer
+            </button>
+          </div>
+        )}
+        {!isLoading && !error && data && (
+          <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
               {formattedMetrics?.map((metric) => (
-                <div key={metric.label} className="bg-gray-700 p-4 rounded-lg">
+                <div key={metric.label} className="bg-gray-800 p-4 rounded-lg">
                   <p className="text-sm text-gray-400">{metric.label}</p>
                   <p className="text-2xl font-bold text-white mt-1">{metric.value}</p>
                 </div>
               ))}
             </div>
-
-            <BacktestingCharts data={data} />
-
+            {/* Affichage des graphiques si data est structuré */}
+            {data?.data?.performance_data?.monthly_returns && <BacktestingCharts chartData={data.data.performance_data.monthly_returns} />}
             <div className="mt-6 text-sm text-gray-400 flex justify-between items-center">
-              <p>Période: {data.period}</p>
+              <p>Période: {data.period?.start} - {data.period?.end}</p>
               <div>
                 <p className="text-gray-400">Dernière mise à jour</p>
                 <p className="text-white font-medium">
-                  {formatDateTime(data.timestamp)}
+                  {data.timestamp ? formatDateTime(data.timestamp) : 'N/A'}
                 </p>
               </div>
             </div>
-          </div>
-        )
-      )}
+          </>
+        )}
+      </div>
     </Card>
   );
 };

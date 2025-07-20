@@ -1,80 +1,164 @@
-import React, { useState } from 'react';
-// Tous les imports utilisent l'alias @ et l'extension .tsx explicite pour les composants
-// Les chemins sont ajustés pour refléter la structure réelle sous src/components/
-import Header from '@/components/layout/Header.tsx';
-import MarketStressCard from '@/components/widgets/MarketStressCard.tsx';
-import ETFPricesCard from '@/components/widgets/ETFPricesCard.tsx';
-import AllocationsCard from '@/components/widgets/AllocationsCard.tsx';
-import CountrySelector from '@/components/ui/CountrySelector.tsx';
-import RegimeCard from '@/components/ui/RegimeCard.tsx';
-import { CountryProvider } from '@/hooks/CountryContext.tsx'; // CountryContext est bien .tsx
-import BacktestingCard from '@/components/BacktestingCard.tsx';
+// Dashboard.tsx — version corrigée complète
+import React, { useState, useEffect } from 'react';
+import dayjs, { Dayjs } from 'dayjs';
+import 'dayjs/locale/fr';
+import { useCountryContext } from '../../hooks/CountryContext';
+import AllocationsCard from '../widgets/AllocationsCard';
+import ETFPricesCard from '../widgets/ETFPricesCard';
+import RegimeCard from '../ui/RegimeCard';
+import BacktestingCard from '../BacktestingCard';
 
-import { motion } from 'framer-motion';
-import { PieChart } from 'lucide-react';
+// Limites dynamiques
+const MIN_DATE = dayjs('2020-01-01');
+const MAX_DATE = dayjs();
 
+// Utilitaire pour parser intelligemment une date
+function parseSmartDate(input: string | Dayjs | Date | null | undefined): Dayjs {
+  if (!input) return MAX_DATE;
+  if (dayjs.isDayjs(input)) return input;
+  if (input instanceof Date) return dayjs(input);
+  if (typeof input === 'string') {
+    const lower = input.trim().toLowerCase();
+    if (lower === 'today' || lower === "aujourd'hui") return MAX_DATE;
+    const parsed = dayjs(input);
+    if (parsed.isValid()) return parsed;
+  }
+  return MAX_DATE;
+}
+
+// Clamp une date entre les bornes
+function clampDate(date: Dayjs): Dayjs {
+  if (date.isBefore(MIN_DATE)) return MIN_DATE;
+  if (date.isAfter(MAX_DATE)) return MAX_DATE;
+  return date;
+}
 
 const Dashboard: React.FC = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { selectedCountry } = useCountryContext();
+  
+  // Initialisation intelligente : 2 ans avant aujourd'hui → aujourd'hui
+  const defaultStart = clampDate(MAX_DATE.subtract(2, 'year'));
+  const defaultEnd = MAX_DATE;
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
+  const [startDate, setStartDate] = useState<Dayjs>(defaultStart);
+  const [endDate, setEndDate] = useState<Dayjs>(defaultEnd);
+  const [error, setError] = useState<string | null>(null);
+
+  // Validation robuste à chaque changement
+  useEffect(() => {
+    let validStart = clampDate(parseSmartDate(startDate));
+    let validEnd = clampDate(parseSmartDate(endDate));
+    if (validEnd.isBefore(validStart)) {
+      // Corrige automatiquement : end = start
+      validEnd = validStart;
+    }
+    setStartDate(validStart);
+    setEndDate(validEnd);
+  }, [startDate, endDate]);
+
+  // Gestion d'erreur UI
+  useEffect(() => {
+    if (endDate.isBefore(startDate)) {
+      setError('La date de fin ne peut pas précéder la date de début.');
+    } else if (startDate.isBefore(MIN_DATE) || endDate.isAfter(MAX_DATE)) {
+      setError('Les dates doivent être comprises entre 2020 et aujourd\'hui.');
+    } else {
+      setError(null);
+    }
+  }, [startDate, endDate]);
+
+  // Handlers pour les inputs
+  const handleStartDateChange = (value: string) => {
+    setStartDate(parseSmartDate(value));
+  };
+  
+  const handleEndDateChange = (value: string) => {
+    setEndDate(parseSmartDate(value));
   };
 
   return (
-    <CountryProvider>
-      <div className="min-h-screen bg-background-dark">
-        <Header
-          isMobileMenuOpen={isMobileMenuOpen}
-          toggleMobileMenu={toggleMobileMenu}
-        />
+    <div className="min-h-screen bg-background-dark text-white p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Oracle Portfolio Dashboard</h1>
+          <p className="text-secondary-500">
+            Analyse multi-pays des régimes économiques et allocations d'actifs
+          </p>
+        </div>
 
-        <main className="container mx-auto px-4 py-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mb-4"
-          >
-            <h2 className="text-2xl font-bold text-white">Financial Dashboard</h2>
-            <p className="text-gray-400">Real-time market data and portfolio analysis</p>
-          </motion.div>
-
-          {/* Grille avec CountrySelector, RegimeCard et MarketStressCard */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-            <CountrySelector />
-            <RegimeCard />
-            <MarketStressCard />
-          </div>
-
-          {/* Nouvelle section pour le BacktestingCard */}
-          <div className="grid grid-cols-1 gap-6 mb-6">
-            <BacktestingCard className="col-span-full" />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <AllocationsCard />
-            <ETFPricesCard />
-          </div>
-        </main>
-
-        <footer className="bg-background-card py-4 mt-8">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="flex items-center mb-4 md:mb-0">
-                <PieChart size={20} className="text-primary-500 mr-2" />
-                <span className="text-gray-400 text-sm">© 2025 Oracle Portfolio. All rights reserved.</span>
-              </div>
-              <div className="flex space-x-6">
-                <a href="#" className="text-gray-400 hover:text-white text-sm">Terms</a>
-                <a href="#" className="text-gray-400 hover:text-white text-sm">Privacy</a>
-                <a href="#" className="text-gray-400 hover:text-white text-sm">Contact</a>
-              </div>
+        {/* Date Range Picker */}
+        <div className="bg-background-secondary rounded-lg p-4 mb-6">
+          <h2 className="text-lg font-semibold mb-4">Période d'analyse</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Date de début :
+              </label>
+              <input
+                type="date"
+                min={MIN_DATE.format('YYYY-MM-DD')}
+                max={MAX_DATE.format('YYYY-MM-DD')}
+                value={startDate.format('YYYY-MM-DD')}
+                onChange={e => handleStartDateChange(e.target.value)}
+                className="w-full px-3 py-2 bg-background-dark border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Date de fin :
+              </label>
+              <input
+                type="date"
+                min={MIN_DATE.format('YYYY-MM-DD')}
+                max={MAX_DATE.format('YYYY-MM-DD')}
+                value={endDate.format('YYYY-MM-DD')}
+                onChange={e => handleEndDateChange(e.target.value)}
+                className="w-full px-3 py-2 bg-background-dark border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
             </div>
           </div>
-        </footer>
+          {error && (
+            <div className="mt-3 p-3 bg-red-900/20 border border-red-500/30 rounded-md text-red-300">
+              {error}
+            </div>
+          )}
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {/* Régime Économique */}
+          <div className="lg:col-span-1">
+            <RegimeCard />
+          </div>
+
+          {/* Allocations */}
+          <div className="lg:col-span-1">
+            <AllocationsCard />
+          </div>
+
+          {/* ETF Prices */}
+          <div className="lg:col-span-1">
+            <ETFPricesCard />
+          </div>
+
+          {/* Backtesting */}
+          <div className="lg:col-span-2 xl:col-span-3">
+            <BacktestingCard />
+          </div>
+        </div>
+
+        {/* Debug Info */}
+        <div className="mt-8 p-4 bg-background-secondary rounded-lg">
+          <h3 className="text-sm font-medium mb-2">Informations de debug</h3>
+          <div className="text-xs text-secondary-500 space-y-1">
+            <p>Pays sélectionné: {selectedCountry}</p>
+            <p>Période: {startDate.format('DD/MM/YYYY')} - {endDate.format('DD/MM/YYYY')}</p>
+            <p>Version: Oracle Portfolio v2.5.0</p>
+          </div>
+        </div>
       </div>
-    </CountryProvider>
+    </div>
   );
 };
 

@@ -1,4 +1,45 @@
 {
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "nodejs",
+      "runtime": "nodejs18",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log"
+      ]
+    },
+    {
+      "source": "functions-python",
+      "codebase": "python",
+      "runtime": "python311",
+      "predeploy": [
+        "python3.11 -m venv venv",
+        ". venv/bin/activate && pip install --upgrade pip",
+        ". venv/bin/activate && pip install -r requirements.txt"
+      ],
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "__pycache__",
+        "*.pyc",
+        "venv/"
+      ]
+    }
+  ],
+  "emulators": {
+    "functions": {
+      "port": 5001
+    },
+    "ui": {
+      "enabled": true,
+      "port": 4000
+    }
+  },
   "hosting": {
     "public": "dist",
     "site": "oracle-portfolio-prod",
@@ -33,11 +74,5 @@
         "destination": "/index.html"
       }
     ]
-  },
-  "functions": {
-    "source": "functions",
-    "runtime": "nodejs20",
-    "secrets": ["FRED_API_KEY", "ALPHA_VANTAGE_API_KEY"],
-    "timeoutSeconds": 60
   }
 }

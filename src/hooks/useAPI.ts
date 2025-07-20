@@ -90,13 +90,54 @@ const useFetch = <T>(url: string, intervalMs: number = 0) => {
 // 🎯 HOOKS SPÉCIFIQUES
 //
 
-export const useMarketStress = () =>
-  useFetch<{
+export const useMarketStress = () => {
+  const [data, setData] = useState<{
     stress_level: string;
     vix: number;
     high_yield_spread: number;
     last_update: string;
-  }>(API_URLS.marketStress, 5 * 60 * 1000);
+    data_sources: {
+      vix: string;
+      spread: string;
+    };
+  } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const result = await fetchWithRetry(API_URLS.marketStress);
+      
+      // Adapter la structure des données pour correspondre à l'interface attendue
+      setData({
+        stress_level: result.stress_level,
+        vix: result.vix,
+        high_yield_spread: result.high_yield_spread,
+        last_update: result.last_update || result.timestamp,
+        data_sources: {
+          vix: result.data_sources?.vix || 'FRED',
+          spread: result.data_sources?.spread || 'FRED'
+        }
+      });
+      setError(null);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      setError(new Error(`Fetch failed: ${message}`));
+      console.error(`Error fetching ${API_URLS.marketStress}:`, err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [fetchData]);
+
+  return { data, isLoading, error, refetch: fetchData };
+};
 
 // 🔧 CORRIGÉ: useMarketData pour gérer la nouvelle structure
 export const useMarketData = () => {

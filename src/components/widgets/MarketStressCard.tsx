@@ -1,8 +1,8 @@
 import React from 'react';
-import Card from '../ui/Card';
-import GaugeChart from '../ui/GaugeChart';
-import StatusIndicator from '../ui/StatusIndicator';
-import Skeleton from '../ui/Skeleton';
+import Card from '../ui/Card-fixed';
+import GaugeChart from '../ui/GaugeChart-fixed';
+import StatusIndicator from '../ui/StatusIndicator-fixed';
+import Skeleton from '../ui/Skeleton-fixed';
 import { formatDateTime } from '../../utils/formatters';
 import { useMarketStress } from '../../hooks/useAPI';
 
@@ -16,7 +16,7 @@ const MarketStressCard: React.FC = () => {
         onRefresh={refetch}
         isLoading={isLoading}
       >
-        <div className="text-secondary-500 text-center py-8">
+        <div className="text-red-400 text-center py-8">
           Failed to load market stress data. Please try again.
         </div>
       </Card>
@@ -42,7 +42,7 @@ const MarketStressCard: React.FC = () => {
         <>
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center">
-              <h4 className="font-bold text-lg">
+              <h4 className="font-bold text-lg text-white">
                 Niveau de stress: {data.stress_level}
               </h4>
               <StatusIndicator 
@@ -63,7 +63,7 @@ const MarketStressCard: React.FC = () => {
                 colorScheme="default"
               />
               <div className="mt-2 text-center">
-                <p className="text-xs text-gray-400">Source: {data.data_sources.vix}</p>
+                <p className="text-xs text-gray-400">Source: FRED</p>
               </div>
             </div>
             
@@ -77,7 +77,7 @@ const MarketStressCard: React.FC = () => {
                 colorScheme="default"
               />
               <div className="mt-2 text-center">
-                <p className="text-xs text-gray-400">Source: {data.data_sources.spread}</p>
+                <p className="text-xs text-gray-400">Source: FRED</p>
               </div>
             </div>
           </div>

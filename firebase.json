@@ -15,11 +15,6 @@
       "source": "functions-python",
       "codebase": "python",
       "runtime": "python311",
-      "predeploy": [
-        "python3.11 -m venv venv",
-        ". venv/bin/activate && pip install --upgrade pip",
-        ". venv/bin/activate && pip install -r requirements.txt"
-      ],
       "ignore": [
         "node_modules",
         ".git",
@@ -31,15 +26,6 @@
       ]
     }
   ],
-  "emulators": {
-    "functions": {
-      "port": 5001
-    },
-    "ui": {
-      "enabled": true,
-      "port": 4000
-    }
-  },
   "hosting": {
     "public": "dist",
     "site": "oracle-portfolio-prod",
@@ -74,5 +60,14 @@
         "destination": "/index.html"
       }
     ]
+  },
+  "emulators": {
+    "functions": {
+      "port": 5001
+    },
+    "ui": {
+      "enabled": true,
+      "port": 4000
+    }
   }
 }

@@ -1,75 +1,89 @@
 /** @type {import('tailwindcss').Config} */
-export default {
-  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+module.exports = {
+  content: [
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './lib/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
   theme: {
     extend: {
       colors: {
+        // Oracle Portfolio Brand Colors
         primary: {
-          50: '#E6FFFA',
-          100: '#B2F5EA',
-          200: '#81E6D9',
-          300: '#4FD1C5',
-          400: '#38B2AC',
-          500: '#2DD4BF',
-          600: '#0D9488',
-          700: '#047857',
-          800: '#065F46',
-          900: '#064E3B'
-        },
-        secondary: {
-          50: '#FFF5F5',
-          100: '#FFE3E3',
-          200: '#FFC9C9',
-          300: '#FFA8A8',
-          400: '#FF8787',
-          500: '#FF6B6B',
-          600: '#FA5252',
-          700: '#F03E3E',
-          800: '#E03131',
-          900: '#C92A2A'
-        },
-        accent: {
-          50: '#FFFBEB',
-          100: '#FEF3C7',
-          200: '#FDE68A',
-          300: '#FCD34D',
-          400: '#FBBF24',
-          500: '#FFC107',
-          600: '#D97706',
-          700: '#B45309',
-          800: '#92400E',
-          900: '#78350F'
-        },
-        info: {
-          50: '#EFF6FF',
-          100: '#DBEAFE',
-          200: '#BFDBFE',
-          300: '#93C5FD',
-          400: '#60A5FA',
-          500: '#3B82F6',
-          600: '#2563EB',
-          700: '#1D4ED8',
-          800: '#1E40AF',
-          900: '#1E3A8A'
+          50: '#e6f7ff',
+          100: '#bae7ff',
+          200: '#91d5ff',
+          300: '#69c0ff',
+          400: '#40a9ff',
+          500: '#00d4ff', // Primary brand color
+          600: '#00b7e6',
+          700: '#0099cc',
+          800: '#007bb3',
+          900: '#005c99',
         },
         background: {
-          dark: '#0F172A',
-          card: '#1E293B',
-          cardHover: '#334155'
-        }
+          primary: '#0f0f23',
+          secondary: '#1a1a2e',
+          tertiary: '#2a2a3e',
+        },
+        text: {
+          primary: '#ffffff',
+          secondary: '#a0a0a0',
+          muted: '#4a4a5e',
+        },
+        success: '#00ff88',
+        error: '#ff4757',
+        warning: '#ffa502',
+        // Regime Colors
+        regime: {
+          expansion: '#00ff88',
+          recovery: '#40a9ff',
+          stagflation: '#ffa502',
+          recession: '#ff4757',
+        },
+        // Sector Colors
+        sector: {
+          technology: '#00d4ff',
+          healthcare: '#00ff88',
+          finance: '#ffa502',
+          energy: '#ff6b6b',
+          consumer: '#4ecdc4',
+          industrials: '#45b7d1',
+          materials: '#96ceb4',
+          utilities: '#feca57',
+        },
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif']
-      },
-      spacing: {
-        '72': '18rem',
-        '84': '21rem',
-        '96': '24rem'
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
       },
       animation: {
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-      }
+        'fade-in': 'fadeIn 0.5s ease-in-out',
+        'slide-up': 'slideUp 0.3s ease-out',
+        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'bounce-slow': 'bounce 2s infinite',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideUp: {
+          '0%': { transform: 'translateY(10px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+      },
+      backdropBlur: {
+        xs: '2px',
+      },
+      boxShadow: {
+        'oracle': '0 4px 20px rgba(0, 212, 255, 0.15)',
+        'oracle-lg': '0 8px 40px rgba(0, 212, 255, 0.2)',
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
 };
+

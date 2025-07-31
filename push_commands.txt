@@ -1,0 +1,77 @@
+ORACLE PORTFOLIO v4.1 - COMMANDES DE PUSH GITHUB
+=================================================
+
+Suivez ces étapes dans votre terminal :
+
+1. CLONER LE REPOSITORY
+-----------------------
+git clone https://github.com/Alchile69/oracle-portfolio.git
+cd oracle-portfolio
+
+2. BASCULER SUR LA BRANCHE
+---------------------------
+git checkout v4.1-replit-ready
+
+3. EXTRAIRE ET COPIER LES FICHIERS
+-----------------------------------
+- Extraire oracle-portfolio-v41-replit-ready.zip
+- Copier TOUS les fichiers de replit_clean/ dans le dossier oracle-portfolio/
+
+Fichiers à copier :
+- package.json
+- next.config.js  
+- tailwind.config.js
+- tsconfig.json
+- lib/ (dossier complet)
+- components/ (dossier complet)
+- hooks/ (dossier complet)
+- pages/ (dossier complet)
+- styles/ (dossier complet)
+- README.md
+- INSTALLATION.md
+
+4. VERIFIER LES CHANGEMENTS
+---------------------------
+git status
+
+5. AJOUTER TOUS LES FICHIERS
+-----------------------------
+git add .
+
+6. COMMIT AVEC MESSAGE DESCRIPTIF
+----------------------------------
+git commit -m "feat: Oracle Portfolio v4.1 Replit-Ready - Architecture complète
+
+- Structure plate optimisée pour Replit
+- Composants v4.1: AllocationChart, RegimeIndicator, SectorTable  
+- Hooks avec vraies APIs (Node.js + Python backends)
+- Types TypeScript complets pour secteurs et régimes
+- Design Oracle Portfolio avec Tailwind CSS
+- Documentation complète (README + INSTALLATION)
+- Configuration Next.js 14 + TypeScript
+- Auto-refresh toutes les 5 minutes
+- Animations Framer Motion
+- Responsive design mobile/desktop
+
+Endpoints utilisés:
+- Node.js: https://us-central1-oracle-portfolio-prod.cloudfunctions.net
+- Python: https://vgh0i1cowmwm.manus.space
+
+Prêt pour import Replit immédiat."
+
+7. PUSH VERS GITHUB
+-------------------
+git push origin v4.1-replit-ready
+
+8. VERIFICATION
+---------------
+Vérifier sur GitHub que la branche est mise à jour :
+https://github.com/Alchile69/oracle-portfolio/tree/v4.1-replit-ready
+
+9. IMPORT REPLIT
+----------------
+Utiliser cette URL pour importer dans Replit :
+https://github.com/Alchile69/oracle-portfolio/tree/v4.1-replit-ready
+
+TERMINÉ ! Oracle Portfolio v4.1 Replit-Ready est maintenant disponible !
+

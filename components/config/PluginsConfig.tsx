@@ -222,7 +222,7 @@ export default function PluginsConfig({ onChange }: PluginsConfigProps) {
   });
 
   const selectedPluginData = plugins.find(p => p.id === selectedPlugin);
-  const categories = [...new Set(plugins.map(p => p.category))];
+  const categories = Array.from(new Set(plugins.map(p => p.category)));
 
   return (
     <div className="p-6">

@@ -1,280 +1,413 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* 🎨 CHARTE GRAPHIQUE ORACLE PORTFOLIO */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-/* Variables CSS personnalisées */
 :root {
-  --primary: #00d4ff;
-  --background: #0f0f23;
-  --background-secondary: #1a1a2e;
-  --border: #2a2a3e;
-  --text-primary: #ffffff;
-  --text-secondary: #4a4a5e;
-  --success: #00ff88;
-  --error: #ff4757;
-  --warning: #ffa502;
+  /* 🎨 Palette de couleurs Oracle Portfolio */
+  --color-primary-dark: #0f0f23;    /* Noir profond - arrière-plan principal */
+  --color-secondary-dark: #1a1a2e;  /* Bleu nuit - arrière-plan secondaire */
+  --color-electric-blue: #00d4ff;   /* Bleu électrique - accents, liens, boutons */
+  --color-white: #ffffff;           /* Blanc pur - texte principal */
+  --color-gray-light: #e5e7eb;      /* Gris clair - texte secondaire */
+  --color-gray-medium: #9ca3af;     /* Gris moyen - bordures */
+  --color-gray-dark: #374151;       /* Gris foncé - éléments désactivés */
+  
+  /* 🌈 Couleurs d'état */
+  --color-success: #10b981;         /* Vert - succès */
+  --color-warning: #f59e0b;         /* Orange - avertissement */
+  --color-error: #ef4444;           /* Rouge - erreur */
+  --color-info: #3b82f6;            /* Bleu - information */
 }
 
-/* Styles de base */
+/* 🌍 Reset et base */
 * {
   box-sizing: border-box;
-}
-
-html,
-body {
-  padding: 0;
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: linear-gradient(180deg, #0f0f23 0%, #1a1a2e 100%);
-  color: #ffffff;
-  min-height: 100vh;
+  padding: 0;
 }
 
-/* Scrollbar personnalisée */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--color-primary-dark);
+  color: var(--color-white);
+  line-height: 1.6;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 📝 Typographie */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+}
+
+h1 {
+  font-size: 32px;
+  font-weight: 800;
+}
+
+h2 {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+h3 {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+h4 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+p {
+  margin-bottom: 1rem;
+}
+
+/* 🔗 Liens */
+a {
+  color: var(--color-electric-blue);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+a:hover {
+  color: #33e0ff;
+  text-decoration: underline;
+}
+
+/* 🎯 Boutons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-electric-blue), #0099cc);
+  color: var(--color-white);
+  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #33e0ff, #00b8e6);
+  box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: var(--color-secondary-dark);
+  color: var(--color-white);
+  border: 1px solid var(--color-gray-dark);
+}
+
+.btn-secondary:hover {
+  background: #252545;
+  border-color: var(--color-electric-blue);
+}
+
+/* 📦 Cartes */
+.card {
+  background: var(--color-secondary-dark);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  border-color: rgba(0, 212, 255, 0.3);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+.card-subtitle {
+  font-size: 14px;
+  color: var(--color-gray-medium);
+  margin-top: 0.25rem;
+}
+
+/* 🎛️ Formulaires */
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--color-primary-dark);
+  border: 1px solid var(--color-gray-dark);
+  border-radius: 8px;
+  color: var(--color-white);
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-electric-blue);
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+}
+
+.form-input::placeholder {
+  color: var(--color-gray-medium);
+}
+
+/* 🏷️ Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-success {
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--color-success);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-warning {
+  background: rgba(245, 158, 11, 0.2);
+  color: var(--color-warning);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-error {
+  background: rgba(239, 68, 68, 0.2);
+  color: var(--color-error);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.badge-info {
+  background: rgba(59, 130, 246, 0.2);
+  color: var(--color-info);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+/* 📊 Indicateurs de statut */
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.status-online .status-dot {
+  background: var(--color-success);
+}
+
+.status-offline .status-dot {
+  background: var(--color-error);
+}
+
+.status-warning .status-dot {
+  background: var(--color-warning);
+}
+
+/* 🎭 Animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* 🎨 Gradients */
+.gradient-primary {
+  background: linear-gradient(135deg, var(--color-electric-blue), #0099cc);
+}
+
+.gradient-secondary {
+  background: linear-gradient(135deg, var(--color-secondary-dark), var(--color-primary-dark));
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-electric-blue), #33e0ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 📱 Navigation */
+.nav-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.nav-tab {
+  padding: 0.75rem 1.5rem;
+  color: var(--color-gray-medium);
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.nav-tab:hover {
+  color: var(--color-white);
+}
+
+.nav-tab.active {
+  color: var(--color-electric-blue);
+  border-bottom-color: var(--color-electric-blue);
+}
+
+/* 🔄 Loading */
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid var(--color-electric-blue);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 📊 Graphiques et données */
+.metric-card {
+  text-align: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.metric-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-electric-blue);
+  margin-bottom: 0.25rem;
+}
+
+.metric-label {
+  font-size: 12px;
+  color: var(--color-gray-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* 🎯 Responsive */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+  
+  h1 {
+    font-size: 24px;
+  }
+  
+  h2 {
+    font-size: 20px;
+  }
+  
+  h3 {
+    font-size: 18px;
+  }
+  
+  .card {
+    padding: 1rem;
+  }
+  
+  .btn {
+    padding: 0.5rem 1rem;
+    font-size: 13px;
+  }
+}
+
+/* 🌟 Utilitaires */
+.text-primary { color: var(--color-electric-blue) !important; }
+.text-secondary { color: var(--color-gray-medium) !important; }
+.text-success { color: var(--color-success) !important; }
+.text-warning { color: var(--color-warning) !important; }
+.text-error { color: var(--color-error) !important; }
+
+.bg-primary { background-color: var(--color-primary-dark) !important; }
+.bg-secondary { background-color: var(--color-secondary-dark) !important; }
+.bg-electric { background-color: var(--color-electric-blue) !important; }
+
+.border-primary { border-color: var(--color-electric-blue) !important; }
+.border-secondary { border-color: rgba(255, 255, 255, 0.1) !important; }
+
+/* 🎨 Scrollbar personnalisée */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1a1a2e;
+  background: var(--color-primary-dark);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2a2a3e;
+  background: var(--color-gray-dark);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4a4a5e;
-}
-
-/* Animations personnalisées */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(10px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes loading {
-  0% {
-    left: -100%;
-  }
-  100% {
-    left: 100%;
-  }
-}
-
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 5px rgba(0, 212, 255, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(0, 212, 255, 0.8);
-  }
-}
-
-/* Classes utilitaires */
-.fade-in {
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-.slide-up {
-  animation: slideUp 0.3s ease-out;
-}
-
-.pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-/* Focus visible pour l'accessibilité */
-.focus-visible {
-  outline: 2px solid #00d4ff;
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-/* États de chargement */
-.loading {
-  position: relative;
-  overflow: hidden;
-}
-
-.loading::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.2), transparent);
-  animation: loading 1.5s infinite;
-}
-
-/* Styles pour les graphiques Recharts */
-.recharts-wrapper {
-  font-family: 'Inter', sans-serif;
-}
-
-.recharts-tooltip-wrapper {
-  z-index: 1000;
-}
-
-.recharts-legend-wrapper {
-  font-size: 12px;
-}
-
-/* Styles pour les composants de formulaire */
-input, textarea, select {
-  @apply bg-background-tertiary border border-background-tertiary text-text-primary;
-  @apply focus:border-primary-400 focus:ring-1 focus:ring-primary-400;
-  @apply transition-colors duration-200;
-}
-
-button {
-  @apply transition-all duration-200;
-}
-
-button:disabled {
-  @apply opacity-50 cursor-not-allowed;
-}
-
-/* Styles pour les liens */
-a {
-  @apply text-primary-400 hover:text-primary-300 transition-colors;
-}
-
-/* Styles pour les tableaux */
-table {
-  @apply w-full;
-}
-
-th {
-  @apply text-left font-semibold text-text-secondary;
-}
-
-td {
-  @apply text-text-primary;
-}
-
-/* Classes utilitaires personnalisées */
-.glass {
-  @apply bg-white/10 backdrop-blur-sm border border-white/20;
-}
-
-.card {
-  @apply bg-background-secondary rounded-xl border border-background-tertiary p-6;
-}
-
-.btn-primary {
-  @apply bg-primary-500 hover:bg-primary-600 text-white font-medium px-4 py-2 rounded-lg;
-  @apply transition-colors duration-200 focus:ring-2 focus:ring-primary-400 focus:ring-offset-2;
-}
-
-.btn-secondary {
-  @apply bg-background-tertiary hover:bg-background-tertiary/80 text-text-primary font-medium px-4 py-2 rounded-lg;
-  @apply transition-colors duration-200 focus:ring-2 focus:ring-primary-400 focus:ring-offset-2;
-}
-
-.text-gradient {
-  @apply bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent;
-}
-
-/* Responsive design helpers */
-@media (max-width: 640px) {
-  .mobile-stack {
-    @apply flex-col space-y-4 space-x-0;
-  }
-}
-
-/* Print styles */
-@media print {
-  body {
-    @apply bg-white text-black;
-  }
-  
-  .no-print {
-    display: none !important;
-  }
-}
-
-/* Dark mode overrides (déjà en dark par défaut) */
-@media (prefers-color-scheme: light) {
-  /* Garde le thème sombre même si l'utilisateur préfère le clair */
-  html, body {
-    background: linear-gradient(180deg, #0f0f23 0%, #1a1a2e 100%);
-    color: #ffffff;
-  }
-}
-
-/* Animations pour les éléments interactifs */
-.hover-lift {
-  @apply transition-transform duration-200;
-}
-
-.hover-lift:hover {
-  @apply transform -translate-y-1;
-}
-
-.hover-glow:hover {
-  @apply shadow-oracle;
-}
-
-/* Styles pour les badges et indicateurs */
-.badge {
-  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
-}
-
-.badge-success {
-  @apply bg-success/10 text-success;
-}
-
-.badge-error {
-  @apply bg-error/10 text-error;
-}
-
-.badge-warning {
-  @apply bg-warning/10 text-warning;
-}
-
-.badge-info {
-  @apply bg-primary-500/10 text-primary-400;
-}
-
-/* Styles pour les états de chargement */
-.skeleton {
-  @apply animate-pulse bg-background-tertiary rounded;
-}
-
-.shimmer {
-  @apply relative overflow-hidden;
-}
-
-.shimmer::after {
-  @apply absolute inset-0 -translate-x-full;
-  content: '';
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-  100% {
-    transform: translateX(100%);
-  }
+  background: var(--color-electric-blue);
 }
 

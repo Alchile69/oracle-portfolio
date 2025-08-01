@@ -90,7 +90,7 @@ export function useIndicatorsConfig(): ConfigHookResult<Indicator[]> {
   }, []);
 
   const updateConfig = useCallback((newConfig: Partial<Indicator[]>) => {
-    setConfig(prev => ({ ...prev, ...newConfig }));
+    setConfig(prev => [...prev, ...Object.values(newConfig)]);
   }, []);
 
   const resetConfig = useCallback(() => {

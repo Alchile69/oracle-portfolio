@@ -170,7 +170,7 @@ export default function RegimesConfig({ onChange }: RegimesConfigProps) {
           return {
             ...regime,
             [parent]: {
-              ...regime[parent as keyof RegimeConfig],
+              ...(regime[parent as keyof RegimeConfig] as object || {}),
               [child]: value
             }
           };

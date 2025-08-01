@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 export const useCountries = () => {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<Error | null>(null);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -14,7 +14,7 @@ export const useCountries = () => {
       setData(jsonData);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
+      setError(new Error(err instanceof Error ? err.message : 'Unknown error'));
     } finally {
       setIsLoading(false);
     }

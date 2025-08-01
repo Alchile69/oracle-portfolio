@@ -145,8 +145,21 @@ export function useFormulasConfig(): ConfigHookResult<Formula[]> {
     }
   }, []);
 
-  const updateConfig = useCallback((newConfig: Partial<Formula[]>) => {
-    setConfig(prev => ({ ...prev, ...newConfig }));
+  const updateConfig = useCallback((newConfig: Formula[] | Partial<Record<number, Formula>>) => {
+    setConfig(prev => {
+      // Si newConfig est un array, on le merge avec l'existant
+      if (Array.isArray(newConfig)) {
+        return [...prev, ...newConfig.filter((item): item is Formula => Boolean(item))];
+      }
+      // Si c'est un objet avec des indices, on met à jour les éléments correspondants
+      const updated = [...prev];
+      Object.entries(newConfig).forEach(([index, value]) => {
+        if (value && !isNaN(Number(index))) {
+          updated[Number(index)] = value;
+        }
+      });
+      return updated;
+    });
   }, []);
 
   const resetConfig = useCallback(() => {
@@ -188,8 +201,21 @@ export function useRegimesConfig(): ConfigHookResult<RegimeConfig[]> {
     }
   }, []);
 
-  const updateConfig = useCallback((newConfig: Partial<RegimeConfig[]>) => {
-    setConfig(prev => ({ ...prev, ...newConfig }));
+  const updateConfig = useCallback((newConfig: RegimeConfig[] | Partial<Record<number, RegimeConfig>>) => {
+    setConfig(prev => {
+      // Si newConfig est un array, on le merge avec l'existant
+      if (Array.isArray(newConfig)) {
+        return [...prev, ...newConfig.filter((item): item is RegimeConfig => Boolean(item))];
+      }
+      // Si c'est un objet avec des indices, on met à jour les éléments correspondants
+      const updated = [...prev];
+      Object.entries(newConfig).forEach(([index, value]) => {
+        if (value && !isNaN(Number(index))) {
+          updated[Number(index)] = value;
+        }
+      });
+      return updated;
+    });
   }, []);
 
   const resetConfig = useCallback(() => {
@@ -231,8 +257,21 @@ export function usePluginsConfig(): ConfigHookResult<Plugin[]> {
     }
   }, []);
 
-  const updateConfig = useCallback((newConfig: Partial<Plugin[]>) => {
-    setConfig(prev => ({ ...prev, ...newConfig }));
+  const updateConfig = useCallback((newConfig: Plugin[] | Partial<Record<number, Plugin>>) => {
+    setConfig(prev => {
+      // Si newConfig est un array, on le merge avec l'existant
+      if (Array.isArray(newConfig)) {
+        return [...prev, ...newConfig.filter((item): item is Plugin => Boolean(item))];
+      }
+      // Si c'est un objet avec des indices, on met à jour les éléments correspondants
+      const updated = [...prev];
+      Object.entries(newConfig).forEach(([index, value]) => {
+        if (value && !isNaN(Number(index))) {
+          updated[Number(index)] = value;
+        }
+      });
+      return updated;
+    });
   }, []);
 
   const resetConfig = useCallback(() => {

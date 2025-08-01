@@ -5,7 +5,7 @@ const CountryContext = createContext({
   setSelectedCountry: (country: string) => {},
 });
 
-export const CountryProvider = ({ children }) => {
+export const CountryProvider = ({ children }: { children: React.ReactNode }) => {
   const [selectedCountry, setSelectedCountry] = useState('FRA');
   return (
     <CountryContext.Provider value={{ selectedCountry, setSelectedCountry }}>

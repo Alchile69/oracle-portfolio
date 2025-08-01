@@ -143,7 +143,7 @@ export const useMarketStress = () => {
 export const useMarketData = () => {
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<any>(null);
+  const [error, setError] = useState<Error | null>(null);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -187,7 +187,7 @@ export const useMarketData = () => {
       }
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
+      setError(new Error(err instanceof Error ? err.message : 'Unknown error'));
       // Fallback data en cas d'erreur
       setData({
         etfs: {
@@ -222,7 +222,7 @@ export const useMarketData = () => {
 export const useAllocations = () => {
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<any>(null);
+  const [error, setError] = useState<Error | null>(null);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -252,7 +252,7 @@ export const useAllocations = () => {
       }
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
+      setError(new Error(err instanceof Error ? err.message : 'Unknown error'));
       // Fallback data en cas d'erreur
       setData({
         data: { regime: 'EXPANSION' },

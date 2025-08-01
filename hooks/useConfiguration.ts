@@ -90,7 +90,20 @@ export function useIndicatorsConfig(): ConfigHookResult<Indicator[]> {
   }, []);
 
   const updateConfig = useCallback((newConfig: Partial<Indicator[]>) => {
-    setConfig(prev => [...prev, ...Object.values(newConfig)]);
+    setConfig(prev => {
+      // Si newConfig est un array partiel, on le merge avec l'existant
+      if (Array.isArray(newConfig)) {
+        return [...prev, ...newConfig.filter(Boolean)];
+      }
+      // Si c'est un objet avec des indices, on met à jour les éléments correspondants
+      const updated = [...prev];
+      Object.entries(newConfig).forEach(([index, value]) => {
+        if (value && !isNaN(Number(index))) {
+          updated[Number(index)] = value;
+        }
+      });
+      return updated;
+    });
   }, []);
 
   const resetConfig = useCallback(() => {

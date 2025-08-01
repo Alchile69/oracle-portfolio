@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Settings, TrendingUp, BarChart3, PieChart, Activity, RefreshCw, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+import Head from 'next/head';
 
 // Composants
 import AllocationChart from '@/components/AllocationChart';

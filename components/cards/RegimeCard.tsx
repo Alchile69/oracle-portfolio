@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useCountryContext } from '../../hooks/CountryContext';
 import { useRegime } from '../../hooks/useRegime';
-import Card from '../ui/Card';
-import Skeleton from '../ui/Skeleton';
-import StatusIndicator from '../ui/StatusIndicator';
+import Card from '../ui/Card-fixed';
+import Skeleton from '../ui/Skeleton-fixed';
+import StatusIndicator from '../ui/StatusIndicator-fixed';
 import { formatDateTime } from '../../utils/formatters';
 
 interface RegimeData {

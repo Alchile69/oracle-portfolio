@@ -1,7 +1,7 @@
 import React from 'react';
-import Card from '../ui/Card';
+import Card from '../ui/Card-fixed';
 import PieChart from '../charts/PieChart';
-import Skeleton from '../ui/Skeleton';
+import Skeleton from '../ui/Skeleton-fixed';
 import { formatDateTime, formatPercent } from '../../utils/formatters';
 import { useAllocations } from '../../hooks/useAPI';
 

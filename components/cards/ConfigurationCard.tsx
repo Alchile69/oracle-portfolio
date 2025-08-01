@@ -1,5 +1,5 @@
 import React from 'react';
-import Card from '../ui/Card';
+import Card from '../ui/Card-fixed';
 import { Settings, Database, Globe, Shield, Clock, Activity } from 'lucide-react';
 
 interface ConfigurationData {

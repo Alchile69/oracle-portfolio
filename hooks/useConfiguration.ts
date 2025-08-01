@@ -89,11 +89,11 @@ export function useIndicatorsConfig(): ConfigHookResult<Indicator[]> {
     }
   }, []);
 
-  const updateConfig = useCallback((newConfig: Partial<Indicator[]>) => {
+  const updateConfig = useCallback((newConfig: Indicator[] | Partial<Record<number, Indicator>>) => {
     setConfig(prev => {
-      // Si newConfig est un array partiel, on le merge avec l'existant
+      // Si newConfig est un array, on le merge avec l'existant
       if (Array.isArray(newConfig)) {
-        return [...prev, ...newConfig.filter(Boolean)];
+        return [...prev, ...newConfig.filter((item): item is Indicator => Boolean(item))];
       }
       // Si c'est un objet avec des indices, on met à jour les éléments correspondants
       const updated = [...prev];

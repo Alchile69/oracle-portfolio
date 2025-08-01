@@ -62,7 +62,7 @@ const ETFPricesCard: React.FC = () => {
         <div className="space-y-4">
           <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
             {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} width="w-20" height="h-8" rounded="rounded-full" />
+              <Skeleton key={i} height="h-8" className="w-20 rounded-full" />
             ))}
           </div>
           <Skeleton height="h-40" className="mb-6" />

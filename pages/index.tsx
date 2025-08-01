@@ -76,7 +76,7 @@ export default function Home() {
                 </div>
                 <div>
                   <h1 className="text-xl font-bold text-text-primary">Oracle Portfolio</h1>
-                  <p className="text-xs text-text-secondary">v4.2.0 - Multi-Pays Complet</p>
+                  <p className="text-xs text-text-secondary">v4.3.0 - VERSION VRAIMENT COMPLÈTE</p>
                 </div>
               </motion.div>
 
@@ -279,7 +279,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex items-center justify-between">
               <p className="text-text-secondary text-sm">
-                © 2025 Oracle Portfolio v4.1 - Allocation sectorielle intelligente
+                © 2025 Oracle Portfolio v4.3 - VERSION VRAIMENT COMPLÈTE
               </p>
               <div className="flex items-center space-x-4 text-sm text-text-secondary">
                 <span>Plateforme d'analyse financière avec plugins dynamiques</span>

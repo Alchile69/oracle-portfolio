@@ -1,7 +1,13 @@
 import React from 'react';
 import { ArrowUp, ArrowDown } from 'lucide-react';
 import { formatPercent } from '../../utils/formatters';
-import { ChangeIndicatorProps } from '../../types';
+
+interface ChangeIndicatorProps {
+  value: number;
+  showArrow?: boolean;
+  showPercent?: boolean;
+  className?: string;
+}
 
 const ChangeIndicator: React.FC<ChangeIndicatorProps> = ({
   value,

@@ -37,9 +37,6 @@ export default function Home() {
     refetch: refetchRegime 
   } = useRegimeData(selectedCountry);
 
-  // Variables dérivées
-  const isHealthy = !hasError && !isLoading;
-
   const handleRefreshAll = () => {
     refetchAllocations();
     refetchRegime();
@@ -47,6 +44,9 @@ export default function Home() {
 
   const isLoading = allocationsLoading || regimeLoading;
   const hasError = allocationsError || regimeError;
+  
+  // Variables dérivées
+  const isHealthy = !hasError && !isLoading;
 
   return (
     <>

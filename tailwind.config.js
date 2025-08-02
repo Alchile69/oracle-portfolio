@@ -7,8 +7,83 @@ module.exports = {
   ],
   theme: {
     extend: {
-      // 🎨 Couleurs Oracle Portfolio
       colors: {
+        // Oracle Portfolio Brand Colors
+        'oracle': {
+          primary: '#00d4ff',      // Bleu électrique
+          secondary: '#1a1a2e',    // Bleu nuit
+          dark: '#0f0f23',         // Noir profond
+          border: '#2a2a3e',       // Gris foncé
+          text: {
+            primary: '#ffffff',    // Blanc pur
+            secondary: '#4a4a5e'   // Gris moyen
+          },
+          success: '#00ff88',      // Vert succès
+          error: '#ff4757',        // Rouge alerte
+          warning: '#ffa502'       // Orange warning
+        },
+        
+        // Background colors
+        background: {
+          dark: '#0f0f23',         // Noir profond
+          card: '#1a1a2e',         // Bleu nuit
+          cardHover: '#2a2a3e'     // Gris foncé
+        },
+        
+        // Primary colors (Oracle blue)
+        primary: {
+          50: '#E6FFFA',
+          100: '#B2F5EA',
+          200: '#81E6D9',
+          300: '#4FD1C5',
+          400: '#38B2AC',
+          500: '#00d4ff',          // Oracle blue
+          600: '#0099cc',
+          700: '#007799',
+          800: '#005566',
+          900: '#003333',
+          DEFAULT: '#00d4ff'
+        },
+        
+        // Secondary colors
+        secondary: {
+          50: '#FFF5F5',
+          100: '#FFE3E3',
+          200: '#FFC9C9',
+          300: '#FFA8A8',
+          400: '#FF8787',
+          500: '#ff4757',          // Rouge Oracle
+          600: '#FA5252',
+          700: '#F03E3E',
+          800: '#E03131',
+          900: '#C92A2A',
+          DEFAULT: '#1a1a2e'
+        },
+        
+        // Success colors
+        success: {
+          500: '#00ff88',          // Vert Oracle
+          600: '#00cc6a',
+          700: '#00994c',
+          DEFAULT: '#00ff88'
+        },
+        
+        // Warning colors
+        warning: {
+          500: '#ffa502',          // Orange Oracle
+          600: '#cc8400',
+          700: '#996300',
+          DEFAULT: '#ffa502'
+        },
+        
+        // Error colors
+        error: {
+          500: '#ff4757',          // Rouge Oracle
+          600: '#e84142',
+          700: '#d13b3c',
+          DEFAULT: '#ff4757'
+        },
+        
         // Couleurs principales
         'primary-dark': '#0f0f23',      // Noir profond - arrière-plan principal
         'secondary-dark': '#1a1a2e',    // Bleu nuit - arrière-plan secondaire
@@ -21,20 +96,6 @@ module.exports = {
           'secondary': '#9ca3af',
           'muted': '#6b7280',
         },
-        
-        // Couleurs d'arrière-plan
-        'background': {
-          'primary': '#0f0f23',
-          'secondary': '#1a1a2e',
-          'card': '#1a1a2e',
-          'dark': '#0f0f23',
-        },
-        
-        // Couleurs d'état
-        'success': '#10b981',
-        'warning': '#f59e0b',
-        'error': '#ef4444',
-        'info': '#3b82f6',
         
         // Couleurs de bordure
         'border': {
@@ -91,6 +152,8 @@ module.exports = {
         'card-hover': '0 8px 30px rgba(0, 0, 0, 0.4)',
         'electric': '0 4px 12px rgba(0, 212, 255, 0.3)',
         'electric-hover': '0 6px 20px rgba(0, 212, 255, 0.4)',
+        'oracle': '0 4px 20px rgba(0, 212, 255, 0.2)',
+        'oracle-hover': '0 8px 30px rgba(0, 212, 255, 0.3)',
         'inner-light': 'inset 0 1px 0 rgba(255, 255, 255, 0.1)',
       },
       
@@ -125,7 +188,10 @@ module.exports = {
       // 📐 Espacements
       spacing: {
         '18': '4.5rem',
+        '72': '18rem',
+        '84': '21rem',
         '88': '22rem',
+        '96': '24rem',
         '128': '32rem',
       },
       

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { api } from '../utils/api';
 import { SectorAllocation } from '@oracle-portfolio/shared';
 
 interface AllocationData {
@@ -39,8 +39,9 @@ export const useAllocationData = (
       setIsLoading(true);
       setError(null);
 
-      const response = await axios.get(`/api/v1/allocations/${regime}`);
-      setData(response.data);
+      const response = await fetch(`https://us-central1-oracle-portfolio-prod.cloudfunctions.net/getAllocations?regime=${regime}`);
+      const result = await response.json();
+      setData(result);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Erreur inconnue'));
     } finally {

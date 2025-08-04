@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { api } from '../utils/api';
 
 interface RegimeData {
   id: string;
@@ -34,11 +34,12 @@ export const useRegimeData = (
       setError(null);
 
       const endpoint = days 
-        ? `/api/v1/regimes/history?country=${country}&days=${days}`
-        : `/api/v1/regimes/current?country=${country}&includeHistory=true`;
+        ? `https://us-central1-oracle-portfolio-prod.cloudfunctions.net/getRegime?country=${country}`
+        : `https://us-central1-oracle-portfolio-prod.cloudfunctions.net/getRegime?country=${country}`;
 
-      const response = await axios.get(endpoint);
-      setData(response.data);
+      const response = await fetch(endpoint);
+      const result = await response.json();
+      setData(result);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Erreur inconnue'));
     } finally {

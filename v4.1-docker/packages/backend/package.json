@@ -29,7 +29,7 @@
     "axios": "^1.6.2",
     "node-cron": "^3.0.3",
     "uuid": "^9.0.1",
-    "@oracle-portfolio/shared": "workspace:*"
+    "@oracle-portfolio/shared": "*"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",

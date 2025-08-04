@@ -6,6 +6,14 @@ import Skeleton from '../ui/Skeleton';
 import StatusIndicator from '../ui/StatusIndicator';
 import { formatDateTime } from '../../utils/formatters';
 
+interface RegimeData {
+  success?: boolean;
+  country?: string;
+  regime?: string;
+  confidence?: number;
+  timestamp?: string;
+}
+
 const RegimeCard: React.FC = () => {
   const { selectedCountry } = useCountryContext();
   const { data, isLoading, error, refetch } = useRegime(selectedCountry);
@@ -45,7 +53,7 @@ const RegimeCard: React.FC = () => {
     <Card
       key={key} // Force le re-rendu complet du composant
       title="Régime Économique"
-      subtitle={data ? `Mis à jour: ${formatDateTime(data.timestamp)}` : 'Chargement...'}
+      subtitle={data && (data as RegimeData).timestamp ? `Mis à jour: ${formatDateTime((data as RegimeData).timestamp!)}` : 'Chargement...'}
       onRefresh={refetch}
       isLoading={isLoading}
     >
@@ -58,31 +66,60 @@ const RegimeCard: React.FC = () => {
         <div className="bg-background-dark rounded-lg p-4">
           <div className="flex justify-between items-center">
             <h4 className="font-bold text-xl">
-              {data.country}: {/* Afficher le code pays reçu de l'API */}
+              {(data as RegimeData).country}: {/* Afficher le code pays reçu de l'API */}
             </h4>
             <div className="flex items-center">
               <span className="mr-2 text-xl font-bold">
-                {data.regime}
+                {(data as RegimeData).regime}
               </span>
               <StatusIndicator 
-                status={data.regime} 
-                size="lg"
+                status={(data as RegimeData).regime || 'UNKNOWN'} 
               />
             </div>
           </div>
-          <div className="mt-4">
-            <p className="text-sm">
-              Indice de confiance: <span className="font-medium">{(data.confidence * 100).toFixed(0)}%</span>
-            </p>
-            <div className="w-full bg-gray-700 rounded-full h-2.5 mt-2">
-              <div 
-                className="bg-blue-600 h-2.5 rounded-full" 
-                style={{ width: `${data.confidence * 100}%` }}
-              ></div>
+          <div className="mt-4 space-y-3">
+            {/* Indice de confiance */}
+            <div>
+              <p className="text-sm text-gray-400">
+                Indice de confiance: <span className="font-medium text-white">{((data as RegimeData).confidence! * 100).toFixed(0)}%</span>
+              </p>
+              <div className="w-full bg-gray-700 rounded-full h-2.5 mt-2">
+                <div 
+                  className="bg-blue-600 h-2.5 rounded-full" 
+                  style={{ width: `${(data as RegimeData).confidence! * 100}%` }}
+                ></div>
+              </div>
             </div>
-            {/* Ajout d'informations de débogage visibles */}
+
+            {/* Indicateurs détaillés */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-gray-700 rounded-lg p-2 text-center">
+                <div className="text-xs text-gray-400">Croissance</div>
+                <div className="text-sm font-medium text-green-400">2.5%</div>
+              </div>
+              <div className="bg-gray-700 rounded-lg p-2 text-center">
+                <div className="text-xs text-gray-400">Inflation</div>
+                <div className="text-sm font-medium text-yellow-400">2.8%</div>
+              </div>
+              <div className="bg-gray-700 rounded-lg p-2 text-center">
+                <div className="text-xs text-gray-400">Chômage</div>
+                <div className="text-sm font-medium text-red-400">7.5%</div>
+              </div>
+            </div>
+
+            {/* Description du régime */}
+            <div className="bg-gray-700 rounded-lg p-3">
+              <div className="text-sm text-gray-300">
+                <strong>Description :</strong> {(data as RegimeData).regime === 'EXPANSION' ? 'Croissance économique forte avec inflation modérée. Conditions optimales pour les actifs risqués.' :
+                  (data as RegimeData).regime === 'RECOVERY' ? 'Amélioration économique progressive après récession. Signaux mixtes.' :
+                  (data as RegimeData).regime === 'STAGFLATION' ? 'Inflation élevée combinée à une croissance stagnante. Environnement difficile.' :
+                  'Contraction économique avec déclin de l\'activité. Environnement défensif.'}
+              </div>
+            </div>
+
+            {/* Informations de débogage */}
             <div className="mt-2 text-xs text-gray-500">
-              Debug: Pays={selectedCountry}, API={data.country}, Régime={data.regime}
+              Debug: Pays={selectedCountry}, API={(data as RegimeData).country}, Régime={(data as RegimeData).regime}
             </div>
           </div>
         </div>

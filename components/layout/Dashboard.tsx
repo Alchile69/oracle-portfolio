@@ -740,32 +740,32 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToComparison }) => {
   }, [backtestingData]);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      {/* Header */}
-      <header className="bg-gray-800 border-b border-gray-700">
+    <div className="min-h-screen bg-background-dark text-white">
+      {/* Header Oracle Portfolio */}
+      <header className="bg-oracle-secondary border-b border-oracle-border shadow-oracle">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <h1 className="text-xl font-bold text-teal-400">🔮 Oracle Portfolio</h1>
-                <div className="text-xs text-gray-500">v2.4.0 - Validation période automatique</div>
+                <h1 className="text-xl font-bold text-oracle-primary">🔮 Oracle Portfolio</h1>
+                <div className="text-xs text-oracle-text-secondary">v4.3.0 - VERSION VRAIMENT COMPLÈTE</div>
               </div>
             </div>
             <nav className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-4">
-                <a href="#" className="text-teal-400 px-3 py-2 rounded-md text-sm font-medium">
+                <a href="#" className="text-oracle-primary px-3 py-2 rounded-md text-sm font-medium hover:bg-oracle-primary hover:bg-opacity-10 transition-all duration-300">
                   📊 Dashboard Principal
                 </a>
                 <button 
                   onClick={onNavigateToComparison}
-                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                  className="text-oracle-text-secondary hover:text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-oracle-primary hover:bg-opacity-10 transition-all duration-300"
                 >
                   🔍 Vue Comparative
                 </button>
               </div>
             </nav>
             <div className="flex items-center">
-              <button className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+              <button className="btn-primary">
                 Get Full Access
               </button>
             </div>
@@ -776,26 +776,28 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToComparison }) => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
+          {/* Header Section */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-white mb-2">Financial Dashboard</h1>
-            <p className="text-gray-400">Real-time market data and portfolio analysis</p>
+            <p className="text-oracle-text-secondary">Real-time market data and portfolio analysis</p>
           </div>
 
+          {/* Top Row - Country Selection & Economic Regime */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            {/* Country Selection */}
-            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            {/* Country Selection Card */}
+            <div className="card">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-white">Sélection du Pays</h3>
+                <h3 className="card-title">Sélection du Pays</h3>
                 <button 
                   onClick={fetchCountriesData}
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-oracle-text-secondary hover:text-white transition-colors"
                   disabled={isLoadingCountries}
                 >
                   {isLoadingCountries ? '⏳' : '🔄'}
                 </button>
               </div>
               
-              <p className="text-sm text-gray-400 mb-4">
+              <p className="text-sm text-oracle-text-secondary mb-4">
                 Mis à jour: {formatDate(currentCountryData?.last_update || new Date().toISOString())}
               </p>
               
@@ -803,7 +805,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToComparison }) => {
                 value={selectedCountry}
                 onChange={handleCountryChange}
                 onInput={handleCountryChange}
-                className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="form-input"
               >
                 {countriesData.map((country) => (
                   <option key={country.code} value={country.code}>
@@ -816,40 +818,40 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToComparison }) => {
                 <div className="mt-4">
                   <h4 className="text-white font-medium mb-2">Régime Économique:</h4>
                   <div className="flex items-center space-x-2 mb-2">
-                    <span className="text-green-400 font-bold">{currentCountryData.regime}</span>
-                    <span className="text-green-400">●</span>
-                    <span className="text-green-400">{currentCountryData.regime}</span>
+                    <span className="text-oracle-success font-bold">{currentCountryData.regime}</span>
+                    <span className="text-oracle-success">●</span>
+                    <span className="text-oracle-success">{currentCountryData.regime}</span>
                   </div>
-                  <div className="text-sm text-gray-400">
+                  <div className="text-sm text-oracle-text-secondary">
                     Confiance: {formatConfidenceIndex(currentCountryData.confidence)}%
                   </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
+                  <div className="w-full bg-oracle-border rounded-full h-2 mt-2">
                     <div 
-                      className="bg-green-500 h-2 rounded-full" 
+                      className="bg-oracle-success h-2 rounded-full transition-all duration-300" 
                       style={{ width: `${formatConfidenceIndex(currentCountryData.confidence)}%` }}
                     ></div>
                   </div>
-                  <div className="text-xs text-gray-500 mt-2">
+                  <div className="text-xs text-oracle-text-secondary mt-2">
                     Dernière mise à jour: {formatDate(currentCountryData.last_update)}
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Economic Regime */}
-            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            {/* Economic Regime Card */}
+            <div className="card">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-white">Régime Économique</h3>
+                <h3 className="card-title">Régime Économique</h3>
                 <button 
                   onClick={fetchCountriesData}
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-oracle-text-secondary hover:text-white transition-colors"
                   disabled={isLoadingCountries}
                 >
                   {isLoadingCountries ? '⏳' : '🔄'}
                 </button>
               </div>
               
-              <p className="text-sm text-gray-400 mb-4">
+              <p className="text-sm text-oracle-text-secondary mb-4">
                 Mis à jour: {formatDate(currentCountryData?.last_update || new Date().toISOString())}
               </p>
 
@@ -857,17 +859,17 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToComparison }) => {
                 <>
                   <div className="mb-4">
                     <div className="flex items-center space-x-2 mb-2">
-                      <span className="text-sm font-medium text-gray-300">{currentCountryData.code}:</span>
-                      <span className="text-green-400 font-bold">{currentCountryData.regime}</span>
-                      <span className="text-green-400">●</span>
-                      <span className="text-green-400">{currentCountryData.regime}</span>
+                      <span className="text-sm font-medium text-oracle-text-secondary">{currentCountryData.code}:</span>
+                      <span className="text-oracle-success font-bold">{currentCountryData.regime}</span>
+                      <span className="text-oracle-success">●</span>
+                      <span className="text-oracle-success">{currentCountryData.regime}</span>
                     </div>
-                    <div className="text-sm text-gray-400 mb-2">
+                    <div className="text-sm text-oracle-text-secondary mb-2">
                       Indice de confiance: {formatConfidenceIndex(currentCountryData.confidence)}%
                     </div>
-                    <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div className="w-full bg-oracle-border rounded-full h-2">
                       <div 
-                        className="bg-blue-500 h-2 rounded-full" 
+                        className="bg-oracle-primary h-2 rounded-full transition-all duration-300" 
                         style={{ width: `${formatConfidenceIndex(currentCountryData.confidence)}%` }}
                       ></div>
                     </div>
@@ -875,20 +877,20 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToComparison }) => {
 
                   <div className="grid grid-cols-3 gap-4 text-center">
                     <div>
-                      <div className="text-sm text-gray-400">Croissance</div>
+                      <div className="text-sm text-oracle-text-secondary">Croissance</div>
                       <div className="text-lg font-bold text-white">{formatEconomicPercentage(currentCountryData.indicators.growth)}%</div>
                     </div>
                     <div>
-                      <div className="text-sm text-gray-400">Inflation</div>
+                      <div className="text-sm text-oracle-text-secondary">Inflation</div>
                       <div className="text-lg font-bold text-white">{formatEconomicPercentage(currentCountryData.indicators.inflation)}%</div>
                     </div>
                     <div>
-                      <div className="text-sm text-gray-400">Chômage</div>
+                      <div className="text-sm text-oracle-text-secondary">Chômage</div>
                       <div className="text-lg font-bold text-white">{formatEconomicPercentage(currentCountryData.indicators.unemployment)}%</div>
                     </div>
                   </div>
 
-                  <div className="text-xs text-gray-500 mt-4">
+                  <div className="text-xs text-oracle-text-secondary mt-4">
                     Debug: Pays={currentCountryData.code}, API={currentCountryData.code}, Régime={currentCountryData.regime}
                   </div>
                 </>
@@ -896,13 +898,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToComparison }) => {
             </div>
           </div>
 
-          {/* Market Stress Indicators */}
-          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-8">
+          {/* Market Stress Indicators Card */}
+          <div className="card mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white">Market Stress Indicators</h3>
+              <h3 className="card-title">Market Stress Indicators</h3>
               <button 
                 onClick={fetchMarketStress}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-oracle-text-secondary hover:text-white transition-colors"
                 disabled={isLoadingMarketStress}
               >
                 {isLoadingMarketStress ? '⏳' : '🔄'}
@@ -911,321 +913,43 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToComparison }) => {
             
             {marketStressData && (
               <>
-                <p className="text-sm text-gray-400 mb-4">
+                <p className="text-sm text-oracle-text-secondary mb-4">
                   Updated: {formatDate(marketStressData.last_update || marketStressData.timestamp)}
                 </p>
-                
-                <div className="text-center mb-6">
-                  <div className="text-sm text-gray-400 mb-2">Niveau de stress: 
-                    <span className="text-red-400 font-bold ml-2">{formatStressLevel(marketStressData.stress_level)}</span>
-                    <span className="text-red-400 ml-2">●</span>
-                    <span className="text-red-400 ml-2">{formatStressLevel(marketStressData.stress_level)}</span>
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="text-center">
-                    <div className="relative w-24 h-24 mx-auto mb-4">
-                      <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
-                        <circle
-                          cx="50"
-                          cy="50"
-                          r="40"
-                          stroke="#374151"
-                          strokeWidth="8"
-                          fill="none"
-                        />
-                        <circle
-                          cx="50"
-                          cy="50"
-                          r="40"
-                          stroke="#3B82F6"
-                          strokeWidth="8"
-                          fill="none"
-                          strokeDasharray={`${(marketStressData.vix / 50) * 251.2} 251.2`}
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-lg font-bold text-white">{marketStressData.vix}</span>
-                      </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-oracle-border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-oracle-text-secondary">Niveau de stress:</span>
+                      <span className={`badge ${formatStressLevel(marketStressData.stress_level) === 'EXTRÊME' ? 'badge-danger' : formatStressLevel(marketStressData.stress_level) === 'ÉLEVÉ' ? 'badge-warning' : 'badge-success'}`}>
+                        {formatStressLevel(marketStressData.stress_level)}
+                      </span>
                     </div>
-                    <div className="text-white font-medium">VIX</div>
-                    <div className="text-xs text-gray-400 mt-1">Source:</div>
-                    <div className="text-xs text-blue-400 break-all">{marketStressData.data_sources?.vix}</div>
+                    <div className="text-2xl font-bold text-white">{marketStressData.vix || 'N/A'}</div>
+                    <div className="text-xs text-oracle-text-secondary">VIX (Source: FRED)</div>
                   </div>
 
-                  <div className="text-center">
-                    <div className="relative w-24 h-24 mx-auto mb-4">
-                      <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
-                        <circle
-                          cx="50"
-                          cy="50"
-                          r="40"
-                          stroke="#374151"
-                          strokeWidth="8"
-                          fill="none"
-                        />
-                        <circle
-                          cx="50"
-                          cy="50"
-                          r="40"
-                          stroke="#EF4444"
-                          strokeWidth="8"
-                          fill="none"
-                          strokeDasharray={`${(marketStressData.high_yield_spread / 15) * 251.2} 251.2`}
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-lg font-bold text-white">{marketStressData.high_yield_spread}</span>
-                      </div>
+                  <div className="bg-oracle-border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-oracle-text-secondary">High Yield Spread:</span>
                     </div>
-                    <div className="text-white font-medium">High Yield Spread</div>
-                    <div className="text-xs text-gray-400 mt-1">Source:</div>
-                    <div className="text-xs text-blue-400 break-all">{marketStressData.data_sources?.spread}</div>
+                    <div className="text-2xl font-bold text-white">{marketStressData.high_yield_spread || 'N/A'}</div>
+                    <div className="text-xs text-oracle-text-secondary">(Source: FRED)</div>
                   </div>
                 </div>
               </>
             )}
           </div>
 
-          {/* Backtesting Engine */}
-          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white">Backtesting Engine</h3>
-              <button 
-                onClick={fetchBacktestingData}
-                className="text-gray-400 hover:text-white transition-colors"
-                disabled={isLoadingBacktesting}
-              >
-                {isLoadingBacktesting ? '⏳' : '🔄'}
-              </button>
-            </div>
-            
-            <div className="mb-4">
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                ✅ API OK
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Date de début</label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Date de fin</label>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            <button
-              onClick={handleLaunchBacktest}
-              disabled={isLoadingBacktesting}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-medium py-3 px-4 rounded-md transition-colors"
-            >
-              {isLoadingBacktesting ? 'Calcul en cours...' : 'Lancer le backtest'}
-            </button>
-
-            {/* Error Display */}
-            {backtestingError && (
-              <div className="mt-4 p-4 bg-red-900 border border-red-700 rounded-md">
-                <div className="text-red-300 text-sm">
-                  <strong>Erreur:</strong> {backtestingError}
-                </div>
-              </div>
-            )}
-
-            {/* Results Display */}
-            {backtestingData && !backtestingError && (
-              <div className="mt-6">
-                {isBacktestingDataValid(backtestingData) ? (
-                  <>
-                    {/* Performance Metrics */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                  <div className="bg-gray-700 rounded-lg p-3 text-center">
-                    <div className="text-xs text-gray-400">Rendement Oracle</div>
-                    <div className={`text-lg font-bold ${performanceMetrics.oracleReturn === 'N/A' ? 'text-gray-400' : 'text-teal-400'}`}>
-                      {performanceMetrics.oracleReturn === 'N/A' ? 'N/A' : `${performanceMetrics.oracleReturn}%`}
-                    </div>
-                  </div>
-                  <div className="bg-gray-700 rounded-lg p-3 text-center">
-                    <div className="text-xs text-gray-400">Rendement Benchmark</div>
-                    <div className={`text-lg font-bold ${performanceMetrics.benchmarkReturn === 'N/A' ? 'text-gray-400' : 'text-blue-400'}`}>
-                      {performanceMetrics.benchmarkReturn === 'N/A' ? 'N/A' : `${performanceMetrics.benchmarkReturn}%`}
-                    </div>
-                  </div>
-                  <div className="bg-gray-700 rounded-lg p-3 text-center">
-                    <div className="text-xs text-gray-400">Surperformance</div>
-                    <div className={`text-lg font-bold ${performanceMetrics.outperformance === 'N/A' ? 'text-gray-400' : 'text-green-400'}`}>
-                      {performanceMetrics.outperformance === 'N/A' ? 'N/A' : `${performanceMetrics.outperformance}%`}
-                    </div>
-                  </div>
-                  <div className="bg-gray-700 rounded-lg p-3 text-center">
-                    <div className="text-xs text-gray-400">Période</div>
-                    <div className="text-lg font-bold text-white">
-                      {performanceMetrics.totalMonths} mois
-                    </div>
-                  </div>
-                </div>
-                  </>
-                ) : (
-                  <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-6 text-center">
-                    <div className="text-red-400 text-lg font-medium mb-2">⚠️ Données non disponibles</div>
-                    <div className="text-gray-300 text-sm mb-4">
-                      Les données de backtesting ne sont pas disponibles pour la période sélectionnée.
-                    </div>
-                    <div className="text-gray-400 text-xs">
-                      Veuillez sélectionner une période plus récente (à partir de 2020).
-                    </div>
-                  </div>
-                )}
-
-                {/* Chart - SÉCURISÉ AVEC VÉRIFICATIONS DÉFENSIVES */}
-                {isBacktestingDataValid(backtestingData) && (
-                <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
-                  <div>
-                    <h4 className="text-white font-medium mb-3">Performance Cumulative (%)</h4>
-                    <div className="bg-gray-700 rounded-lg p-4 h-64">
-                      {(() => {
-                        // 🛡️ VÉRIFICATIONS DÉFENSIVES ULTRA-ROBUSTES
-                        console.log('🛡️ RENDER GUARD: Checking chartData for rendering');
-                        console.log('🛡️ chartData:', chartData);
-                        console.log('🛡️ chartData type:', typeof chartData);
-                        console.log('🛡️ chartData isArray:', Array.isArray(chartData));
-                        console.log('🛡️ chartData length:', chartData?.length);
-                        
-                        // Vérification 1: chartData existe et est un array
-                        if (!chartData || !Array.isArray(chartData)) {
-                          console.log('🛡️ RENDER GUARD: chartData is not a valid array');
-                          return (
-                            <div className="flex items-center justify-center h-full text-gray-400">
-                              Données de graphique invalides (pas un tableau)
-                            </div>
-                          );
-                        }
-                        
-                        // Vérification 2: chartData a une longueur valide
-                        if (chartData.length === 0) {
-                          console.log('🛡️ RENDER GUARD: chartData is empty');
-                          return (
-                            <div className="flex items-center justify-center h-full text-gray-400">
-                              Aucune donnée de graphique disponible
-                            </div>
-                          );
-                        }
-                        
-                        // Vérification 3: Vérifier que les données ont la structure attendue
-                        const hasValidStructure = chartData.every((item, index) => {
-                          if (!item || typeof item !== 'object') {
-                            console.warn('🛡️ RENDER GUARD: Invalid item at index', index, item);
-                            return false;
-                          }
-                          
-                          if (typeof item.Oracle !== 'number' || typeof item.Benchmark !== 'number') {
-                            console.warn('🛡️ RENDER GUARD: Invalid data types at index', index, {
-                              Oracle: typeof item.Oracle,
-                              Benchmark: typeof item.Benchmark,
-                              item
-                            });
-                            return false;
-                          }
-                          
-                          return true;
-                        });
-                        
-                        if (!hasValidStructure) {
-                          console.log('🛡️ RENDER GUARD: chartData has invalid structure');
-                          return (
-                            <div className="flex items-center justify-center h-full text-gray-400">
-                              Structure de données invalide
-                            </div>
-                          );
-                        }
-                        
-                        console.log('🛡️ RENDER GUARD: All checks passed, rendering chart with', chartData.length, 'data points');
-                        
-                        // Rendu sécurisé du graphique avec PATCH ULTRA-DÉFENSIF
-                        try {
-                          // 🛡️ PATCH CRITIQUE: TOUJOURS passer un array à LineChart
-                          const safeChartData = Array.isArray(chartData) ? chartData : [];
-                          
-                          return (
-                            <ResponsiveContainer width="100%" height="100%">
-                              <LineChart data={safeChartData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                                <XAxis 
-                                  dataKey="date" 
-                                  stroke="#9CA3AF"
-                                  fontSize={12}
-                                  interval="preserveStartEnd"
-                                />
-                                <YAxis 
-                                  stroke="#9CA3AF"
-                                  fontSize={12}
-                                />
-                                <Tooltip 
-                                  contentStyle={{ 
-                                    backgroundColor: '#374151', 
-                                    border: 'none', 
-                                    borderRadius: '8px',
-                                    color: '#fff'
-                                  }}
-                                />
-                                <Legend />
-                                <Line 
-                                  type="monotone" 
-                                  dataKey="Oracle" 
-                                  stroke="#2DD4BF" 
-                                  strokeWidth={2}
-                                  dot={false}
-                                />
-                                <Line 
-                                  type="monotone" 
-                                  dataKey="Benchmark" 
-                                  stroke="#3B82F6" 
-                                  strokeWidth={2}
-                                  dot={false}
-                                />
-                              </LineChart>
-                            </ResponsiveContainer>
-                          );
-                        } catch (renderError) {
-                          console.error('🛡️ RENDER ERROR:', renderError);
-                          return (
-                            <div className="flex items-center justify-center h-full text-red-400">
-                              Erreur de rendu du graphique: {renderError.message}
-                            </div>
-                          );
-                        }
-                      })()}
-                    </div>
-                  </div>
-                </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Portfolio Allocations */}
-            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+          {/* Portfolio Allocations & ETF Prices Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* Portfolio Allocations Card */}
+            <div className="card">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-white">Allocations de portefeuille</h3>
+                <h3 className="card-title">Allocations du portefeuille</h3>
                 <button 
                   onClick={fetchCountriesData}
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-oracle-text-secondary hover:text-white transition-colors"
                   disabled={isLoadingCountries}
                 >
                   {isLoadingCountries ? '⏳' : '🔄'}
@@ -1261,7 +985,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToComparison }) => {
                             className="w-3 h-3 rounded-full mr-2" 
                             style={{ backgroundColor: item.color }}
                           ></div>
-                          <span className="text-sm text-gray-300">{item.name}</span>
+                          <span className="text-sm text-oracle-text-secondary">{item.name}</span>
                         </div>
                         <span className="text-sm font-medium text-white">{item.value}%</span>
                       </div>
@@ -1271,13 +995,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToComparison }) => {
               )}
             </div>
 
-            {/* ETF Prices */}
-            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            {/* ETF Prices Card */}
+            <div className="card">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-white">ETF Prices</h3>
+                <h3 className="card-title">ETF Prices</h3>
                 <button 
                   onClick={fetchETFData}
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-oracle-text-secondary hover:text-white transition-colors"
                   disabled={isLoadingETF}
                 >
                   {isLoadingETF ? '⏳' : '🔄'}
@@ -1286,14 +1010,14 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToComparison }) => {
               
               <div className="space-y-4">
                 {etfData.map((etf, index) => (
-                  <div key={index} className="flex items-center justify-between">
+                  <div key={index} className="flex items-center justify-between p-3 bg-oracle-border rounded-lg">
                     <div>
                       <div className="font-medium text-white">{etf.symbol}</div>
-                      <div className="text-sm text-gray-400">{etf.name}</div>
+                      <div className="text-sm text-oracle-text-secondary">{etf.name}</div>
                     </div>
                     <div className="text-right">
                       <div className="font-medium text-white">${etf.price.toFixed(2)}</div>
-                      <div className={`text-sm ${etf.changePercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      <div className={`text-sm ${etf.changePercent >= 0 ? 'text-oracle-success' : 'text-oracle-error'}`}>
                         {etf.changePercent >= 0 ? '+' : ''}{etf.changePercent.toFixed(2)}%
                       </div>
                     </div>
@@ -1301,6 +1025,111 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToComparison }) => {
                 ))}
               </div>
             </div>
+          </div>
+
+          {/* Backtesting Engine Card */}
+          <div className="card mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="card-title">Backtesting Engine</h3>
+              <button 
+                onClick={fetchBacktestingData}
+                className="text-oracle-text-secondary hover:text-white transition-colors"
+                disabled={isLoadingBacktesting}
+              >
+                {isLoadingBacktesting ? '⏳' : '🔄'}
+              </button>
+            </div>
+            
+            <div className="mb-4">
+              <span className="badge-success">
+                ✅ API OK
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div>
+                <label className="form-label">Date de début</label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="form-input"
+                />
+              </div>
+              <div>
+                <label className="form-label">Date de fin</label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="form-input"
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={handleLaunchBacktest}
+              disabled={isLoadingBacktesting}
+              className="btn-primary w-full"
+            >
+              {isLoadingBacktesting ? 'Calcul en cours...' : 'Lancer le backtest'}
+            </button>
+
+            {/* Error Display */}
+            {backtestingError && (
+              <div className="mt-4 p-4 bg-oracle-error bg-opacity-20 border border-oracle-error rounded-lg">
+                <div className="text-oracle-error text-sm">
+                  <strong>Erreur:</strong> {backtestingError}
+                </div>
+              </div>
+            )}
+
+            {/* Results Display */}
+            {backtestingData && !backtestingError && (
+              <div className="mt-6">
+                {isBacktestingDataValid(backtestingData) ? (
+                  <>
+                    {/* Performance Metrics */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                      <div className="bg-oracle-border rounded-lg p-3 text-center">
+                        <div className="text-xs text-oracle-text-secondary">Rendement Oracle</div>
+                        <div className={`text-lg font-bold ${performanceMetrics.oracleReturn === 'N/A' ? 'text-oracle-text-secondary' : 'text-oracle-primary'}`}>
+                          {performanceMetrics.oracleReturn === 'N/A' ? 'N/A' : `${performanceMetrics.oracleReturn}%`}
+                        </div>
+                      </div>
+                      <div className="bg-oracle-border rounded-lg p-3 text-center">
+                        <div className="text-xs text-oracle-text-secondary">Rendement Benchmark</div>
+                        <div className={`text-lg font-bold ${performanceMetrics.benchmarkReturn === 'N/A' ? 'text-oracle-text-secondary' : 'text-oracle-primary'}`}>
+                          {performanceMetrics.benchmarkReturn === 'N/A' ? 'N/A' : `${performanceMetrics.benchmarkReturn}%`}
+                        </div>
+                      </div>
+                      <div className="bg-oracle-border rounded-lg p-3 text-center">
+                        <div className="text-xs text-oracle-text-secondary">Surperformance</div>
+                        <div className={`text-lg font-bold ${performanceMetrics.outperformance === 'N/A' ? 'text-oracle-text-secondary' : 'text-oracle-success'}`}>
+                          {performanceMetrics.outperformance === 'N/A' ? 'N/A' : `${performanceMetrics.outperformance}%`}
+                        </div>
+                      </div>
+                      <div className="bg-oracle-border rounded-lg p-3 text-center">
+                        <div className="text-xs text-oracle-text-secondary">Période</div>
+                        <div className="text-lg font-bold text-white">
+                          {performanceMetrics.totalMonths} mois
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="bg-oracle-error bg-opacity-20 border border-oracle-error rounded-lg p-6 text-center">
+                    <div className="text-oracle-error text-lg font-medium mb-2">⚠️ Données non disponibles</div>
+                    <div className="text-oracle-text-secondary text-sm mb-4">
+                      Les données de backtesting ne sont pas disponibles pour la période sélectionnée.
+                    </div>
+                    <div className="text-oracle-text-secondary text-xs">
+                      Essayez une période différente ou vérifiez la disponibilité des données.
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </main>

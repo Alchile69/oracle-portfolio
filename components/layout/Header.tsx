@@ -14,7 +14,10 @@ const Header: React.FC<HeaderProps> = ({ isMobileMenuOpen, toggleMobileMenu }) =
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <PieChart size={24} className="text-primary-500 mr-2" />
-            <h1 className="text-xl font-bold text-white">Oracle Portfolio</h1>
+            <div>
+              <h1 className="text-xl font-bold text-white">Oracle Portfolio</h1>
+              <div className="text-xs text-gray-400">v4.2.0 - Multi-Pays Complet</div>
+            </div>
           </div>
           
           <nav className="hidden md:flex space-x-6">

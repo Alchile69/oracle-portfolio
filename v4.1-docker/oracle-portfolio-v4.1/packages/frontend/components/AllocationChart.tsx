@@ -1,7 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { SectorAllocation, SECTOR_NAMES } from '@oracle-portfolio/shared';
+
+interface SectorAllocation {
+  sector: string;
+  allocation: number;
+  confidence: number;
+  weight: number;
+}
 
 interface AllocationChartProps {
   allocations?: SectorAllocation[];
@@ -9,23 +15,34 @@ interface AllocationChartProps {
 }
 
 const COLORS = [
-  '#3B82F6', // blue
-  '#10B981', // green
-  '#F59E0B', // yellow
-  '#EF4444', // red
-  '#8B5CF6', // purple
-  '#06B6D4', // cyan
-  '#F97316', // orange
+  '#00d4ff', // primary blue
+  '#00ff88', // success green
+  '#ffa502', // warning orange
+  '#ff4757', // error red
+  '#9c88ff', // purple
+  '#00d4ff', // cyan
+  '#ff6b6b', // light red
   '#84CC16', // lime
 ];
+
+const SECTOR_NAMES: { [key: string]: string } = {
+  TECHNOLOGY: 'Technologie',
+  FINANCE: 'Finance',
+  ENERGY: 'Énergie',
+  CONSUMER: 'Consommation',
+  HEALTHCARE: 'Santé',
+  INDUSTRIALS: 'Industriels',
+  MATERIALS: 'Matériaux',
+  UTILITIES: 'Services publics'
+};
 
 export const AllocationChart: React.FC<AllocationChartProps> = ({ allocations, regime }) => {
   if (!allocations || allocations.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+      <div className="bg-background-card border border-border rounded-lg shadow-card p-6">
         <div className="animate-pulse">
-          <div className="h-4 bg-slate-200 rounded w-1/3 mb-4"></div>
-          <div className="h-64 bg-slate-200 rounded"></div>
+          <div className="h-4 bg-border rounded w-1/3 mb-4"></div>
+          <div className="h-64 bg-border rounded"></div>
         </div>
       </div>
     );
@@ -46,10 +63,10 @@ export const AllocationChart: React.FC<AllocationChartProps> = ({ allocations, r
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-white p-3 border border-slate-200 rounded-lg shadow-lg">
-          <p className="font-medium text-slate-900">{data.name}</p>
-          <p className="text-slate-600">{data.value.toFixed(1)}%</p>
-          <p className="text-xs text-slate-500">
+        <div className="bg-background-card p-3 border border-border rounded-lg shadow-card">
+          <p className="font-medium text-text-primary">{data.name}</p>
+          <p className="text-text-secondary">{data.value.toFixed(1)}%</p>
+          <p className="text-xs text-text-secondary">
             Confiance: {Math.round(data.confidence * 100)}%
           </p>
         </div>
@@ -62,12 +79,12 @@ export const AllocationChart: React.FC<AllocationChartProps> = ({ allocations, r
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="bg-white rounded-lg shadow-sm border border-slate-200 p-6"
+      className="bg-background-card border border-border rounded-lg shadow-card hover:shadow-card-hover transition-all duration-300 p-6"
     >
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-slate-900">Allocation Sectorielle</h2>
+        <h2 className="text-lg font-semibold text-text-primary">Allocation Sectorielle</h2>
         {regime && (
-          <span className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-md">
+          <span className="px-2 py-1 bg-primary bg-opacity-20 text-primary text-xs rounded-md border border-primary border-opacity-30">
             Régime: {regime}
           </span>
         )}
@@ -101,24 +118,24 @@ export const AllocationChart: React.FC<AllocationChartProps> = ({ allocations, r
 
         {/* Statistiques */}
         <div className="space-y-4">
-          <div className="bg-slate-50 rounded-lg p-4">
-            <h3 className="text-sm font-medium text-slate-700 mb-2">Métriques</h3>
+          <div className="bg-background-secondary rounded-lg p-4 border border-border">
+            <h3 className="text-sm font-medium text-text-primary mb-2">Métriques</h3>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-xs text-slate-600">Total</span>
-                <span className="text-sm font-medium text-slate-900">
+                <span className="text-xs text-text-secondary">Total</span>
+                <span className="text-sm font-medium text-text-primary">
                   {totalAllocation.toFixed(1)}%
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-xs text-slate-600">Risque</span>
-                <span className="text-sm font-medium text-slate-900">
+                <span className="text-xs text-text-secondary">Risque</span>
+                <span className="text-sm font-medium text-text-primary">
                   {riskScore.toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-xs text-slate-600">Secteurs</span>
-                <span className="text-sm font-medium text-slate-900">
+                <span className="text-xs text-text-secondary">Secteurs</span>
+                <span className="text-sm font-medium text-text-primary">
                   {allocations.length}
                 </span>
               </div>
@@ -126,8 +143,8 @@ export const AllocationChart: React.FC<AllocationChartProps> = ({ allocations, r
           </div>
 
           {/* Top 3 secteurs */}
-          <div className="bg-slate-50 rounded-lg p-4">
-            <h3 className="text-sm font-medium text-slate-700 mb-2">Top 3</h3>
+          <div className="bg-background-secondary rounded-lg p-4 border border-border">
+            <h3 className="text-sm font-medium text-text-primary mb-2">Top 3</h3>
             <div className="space-y-2">
               {allocations
                 .sort((a, b) => b.allocation - a.allocation)
@@ -139,11 +156,11 @@ export const AllocationChart: React.FC<AllocationChartProps> = ({ allocations, r
                         className="w-3 h-3 rounded-full"
                         style={{ backgroundColor: COLORS[index % COLORS.length] }}
                       />
-                      <span className="text-xs text-slate-600">
+                      <span className="text-xs text-text-secondary">
                         {SECTOR_NAMES[allocation.sector]}
                       </span>
                     </div>
-                    <span className="text-xs font-medium text-slate-900">
+                    <span className="text-xs font-medium text-text-primary">
                       {allocation.allocation.toFixed(1)}%
                     </span>
                   </div>
@@ -154,8 +171,8 @@ export const AllocationChart: React.FC<AllocationChartProps> = ({ allocations, r
       </div>
 
       {/* Légende détaillée */}
-      <div className="mt-6 pt-4 border-t border-slate-100">
-        <h4 className="text-sm font-medium text-slate-700 mb-3">Détail par secteur</h4>
+      <div className="mt-6 pt-4 border-t border-border">
+        <h4 className="text-sm font-medium text-text-primary mb-3">Détail par secteur</h4>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {allocations.map((allocation, index) => (
             <div key={allocation.sector} className="flex items-center space-x-2">
@@ -164,10 +181,10 @@ export const AllocationChart: React.FC<AllocationChartProps> = ({ allocations, r
                 style={{ backgroundColor: COLORS[index % COLORS.length] }}
               />
               <div className="min-w-0 flex-1">
-                <div className="text-xs font-medium text-slate-900 truncate">
+                <div className="text-xs font-medium text-text-primary truncate">
                   {SECTOR_NAMES[allocation.sector]}
                 </div>
-                <div className="text-xs text-slate-500">
+                <div className="text-xs text-text-secondary">
                   {allocation.allocation.toFixed(1)}%
                 </div>
               </div>

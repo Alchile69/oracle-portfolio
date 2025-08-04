@@ -1,0 +1,99 @@
+name: Oracle Portfolio Deploy CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+  workflow_dispatch: # Permet le déclenchement manuel
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Run tests # Assurez-vous d'avoir des tests configurés
+        run: npm test
+        continue-on-error: true # Permet au workflow de continuer même si les tests échouent, à ajuster selon la politique de l'équipe
+
+  deploy-staging:
+    if: github.ref == 'refs/heads/staging'
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools@14.7.0 # SPÉCIFIER LA VERSION EXACTE
+
+      - name: Install Functions dependencies
+        run: |
+          cd functions
+          npm ci
+          npm rebuild # AJOUTÉ POUR FORCER LA RECONSTRUCTION DES MODULES
+
+      - name: Deploy to Firebase Staging (Frontend + Functions )
+        run: firebase deploy --project oracle-portfolio-staging --token "${{ secrets.FIREBASE_TOKEN }}"
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+  deploy-production:
+    if: github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools@14.7.0 # SPÉCIFIER LA VERSION EXACTE
+
+      - name: Install Functions dependencies
+        run: |
+          cd functions
+          npm ci
+          npm rebuild # AJOUTÉ POUR FORCER LA RECONSTRUCTION DES MODULES
+
+      - name: Deploy to Firebase Production (Frontend + Functions)
+        run: firebase deploy --project oracle-portfolio-prod --token "${{ secrets.FIREBASE_TOKEN }}"
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

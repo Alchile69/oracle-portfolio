@@ -1,0 +1,53 @@
+# Oracle Portfolio 3.0 - Firebase Functions Dependencies
+# Optimisé pour Python 3.11 et performance
+
+# Firebase Functions Core
+functions-framework==3.*
+firebase-functions==0.1.*
+firebase-admin==6.*
+
+# Data Processing & Analysis
+pandas==2.1.*
+numpy==1.24.*
+
+# HTTP Requests & APIs
+requests==2.31.*
+urllib3==2.0.*
+
+# Date & Time Handling
+python-dateutil==2.8.*
+
+# JSON & Data Serialization
+jsonschema==4.19.*
+
+# Logging & Monitoring
+structlog==23.*
+
+# Mathematical Operations
+scipy==1.11.*
+
+# Caching (for performance)
+cachetools==5.3.*
+
+# Environment Variables
+python-dotenv==1.0.*
+
+# Type Hints Support
+typing-extensions==4.7.*
+
+# Security & Validation
+cryptography==41.*
+certifi==2023.*
+
+# Performance Optimization
+ujson==5.8.*
+
+# Google Cloud Dependencies
+google-cloud-core==2.3.*
+google-cloud-firestore==2.11.*
+google-auth==2.22.*
+
+# Additional Utilities
+pytz==2023.*
+six==1.16.*
+

@@ -1,0 +1,150 @@
+version: '3.8'
+
+services:
+  # Base de données PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: oracle-portfolio-db
+    environment:
+      POSTGRES_DB: oracle_portfolio
+      POSTGRES_USER: oracle_user
+      POSTGRES_PASSWORD: your_secure_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U oracle_user -d oracle_portfolio"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis pour le cache et les sessions
+  redis:
+    image: redis:7-alpine
+    container_name: oracle-portfolio-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      target: backend-builder
+    container_name: oracle-portfolio-backend
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://oracle_user:your_secure_password@postgres:5432/oracle_portfolio
+      REDIS_URL: redis://redis:6379
+      PORT: 3001
+      JWT_SECRET: dev-jwt-secret
+      SESSION_SECRET: dev-session-secret
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./packages/backend:/app/packages/backend
+      - ./packages/shared:/app/packages/shared
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: ["npm", "run", "dev"]
+    working_dir: /app/packages/backend
+
+  # Frontend Next.js
+  frontend:
+    build:
+      context: .
+      target: frontend-builder
+    container_name: oracle-portfolio-frontend
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./packages/frontend:/app/packages/frontend
+      - ./packages/shared:/app/packages/shared
+      - /app/packages/frontend/.next
+      - /app/packages/frontend/node_modules
+    depends_on:
+      - backend
+    command: ["npm", "run", "dev"]
+    working_dir: /app/packages/frontend
+
+  # Nginx (optionnel pour le développement)
+  nginx:
+    image: nginx:alpine
+    container_name: oracle-portfolio-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./scripts/nginx/oracle-portfolio.conf:/etc/nginx/conf.d/default.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - frontend
+      - backend
+    profiles:
+      - production
+
+  # Prometheus pour le monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: oracle-portfolio-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    profiles:
+      - monitoring
+
+  # Grafana pour les dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: oracle-portfolio-grafana
+    ports:
+      - "3002:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
+    profiles:
+      - monitoring
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  default:
+    name: oracle-portfolio-network 

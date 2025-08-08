@@ -20,6 +20,23 @@ const FALLBACK_REGIME_DATA = {
   MEX: { regime: 'RECOVERY', confidence: 0.73, indicators: { growth: 0.033, inflation: 0.042, unemployment: 0.035 } }
 };
 
+// Données de fallback pour les données sectorielles
+const FALLBACK_SECTOR_DATA = {
+  sectors: [
+    { name: 'Technologie', allocation: 25, performance: 0.15, risk: 'Élevé' },
+    { name: 'Finance', allocation: 20, performance: 0.08, risk: 'Modéré' },
+    { name: 'Santé', allocation: 15, performance: 0.12, risk: 'Modéré' },
+    { name: 'Industrie', allocation: 12, performance: 0.06, risk: 'Modéré' },
+    { name: 'Énergie', allocation: 8, performance: 0.04, risk: 'Élevé' },
+    { name: 'Consommation', allocation: 10, performance: 0.09, risk: 'Faible' },
+    { name: 'Matériaux', allocation: 5, performance: 0.07, risk: 'Élevé' },
+    { name: 'Télécom', allocation: 5, performance: 0.05, risk: 'Modéré' }
+  ],
+  total_allocation: 100,
+  last_update: new Date().toISOString(),
+  source: 'fallback'
+};
+
 export const useAPI = (endpoint, dependencies = []) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -43,6 +60,12 @@ export const useAPI = (endpoint, dependencies = []) => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
+      // Vérifier si la réponse est du JSON valide
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Réponse non-JSON reçue du serveur');
+      }
+
       const result = await response.json();
       setData(result);
     } catch (err) {
@@ -58,6 +81,13 @@ export const useAPI = (endpoint, dependencies = []) => {
           success: true,
           timestamp: new Date().toISOString(),
           source: 'fallback'
+        });
+        setError(null); // Clear error since we have fallback data
+      } else if (endpoint === 'getSectorData' || endpoint.includes('sector')) {
+        console.log('Utilisation des données de fallback sectorielles');
+        setData({
+          success: true,
+          ...FALLBACK_SECTOR_DATA
         });
         setError(null); // Clear error since we have fallback data
       }
@@ -96,5 +126,11 @@ export const useIndicatorsData = () => {
 
 export const useSystemHealth = () => {
   return useAPI('getSystemHealth');
+};
+
+// Nouvelle fonction pour les données sectorielles
+export const useSectorData = () => {
+  const { selectedCountry } = useCountry();
+  return useAPI('getSectorData', [selectedCountry]);
 };
 
